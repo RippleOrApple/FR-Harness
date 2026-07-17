@@ -6,39 +6,39 @@
 
 ## Current Phase
 
-Phase 1
+Complete
 
 ## Phases
 
 ### Phase 1: Merge Gate
 
-- [ ] 核对最终 PR checks
-- [ ] 使用 expected head SHA 合并 PR #1
-- [ ] 同步本地 main
-- **Status:** pending
+- [x] 核对最终 PR checks
+- [x] 使用 expected head SHA 合并 PR #1
+- [x] 从 `origin/main` 建立独立证据分支
+- **Status:** complete
 
 ### Phase 2: Publish
 
-- [ ] 等待 main unit-test
-- [ ] 等待 main docker-build
-- [ ] 等待 publish-image
-- [ ] 核对 latest 与 SHA tag
-- **Status:** pending
+- [x] 等待 main unit-test
+- [x] 等待 main docker-build
+- [x] 等待 publish-image
+- [x] 核对 latest 与 SHA tag
+- **Status:** complete
 
 ### Phase 3: Public Verification
 
-- [ ] 设置 GHCR package Public
-- [ ] 使用空 Docker 配置匿名 pull
-- [ ] 冷启动并验证 HTTP 200
-- [ ] 扫描容器日志测试凭据
-- **Status:** pending
+- [x] 通过匿名 manifest/pull 证明 GHCR package Public
+- [x] 使用空 Docker 配置匿名 pull
+- [x] 冷启动并验证 HTTP 200
+- [x] 扫描容器日志测试凭据
+- **Status:** complete
 
 ### Phase 4: Evidence
 
-- [ ] 更新 README 与 AGENT_LOG
-- [ ] 保存 run、package、tag 和验证命令
-- [ ] 运行最终回归
-- **Status:** pending
+- [x] 更新 README 与 AGENT_LOG
+- [x] 保存 run、package、tag 和验证命令
+- [x] 运行最终回归
+- **Status:** complete
 
 ## Decisions Made
 
