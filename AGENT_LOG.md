@@ -88,3 +88,12 @@ Chronological records of skills, context, subagent work, human interventions, an
 - Implementation: approval actions and decisions survive SQLite restart; `approved → consumed` is a conditional atomic update; resume executes only after obtaining that transition; rejected actions cancel without side effects; all lifecycle transitions are audited.
 - Security: approval JSON is redacted before persistence via the shared `security.py` helper.
 - Debugging lesson: the full suite exposed same-second, same-size Python rewrites reusing stale `.pyc`; evidence from audit outputs confirmed the second pytest still imported `wrong`. A red regression test now requires Python rewrites to advance the integer mtime cache key, restoring deterministic feedback repair.
+
+## 2026-07-17 — Task 9：FastAPI 与三页极简 WebUI
+
+- Skills used: `planning-with-files`, `test-driven-development`.
+- Process files: `temp/task-09/GOAL.md`, `task_plan.md`, `findings.md`, `progress.md`.
+- RED evidence: with only the application-factory skeleton present, all 5 initial route tests returned 404; the added key-display regression then failed by exposing its test secret.
+- GREEN evidence: Web tests passed (6 passed), then the full suite passed cleanly (41 passed).
+- Implementation: URL-encoded task creation validates an existing directory and runs synchronously to a stop; detail pages HTML-escape goal/workspace/audit JSON; pending approvals can be approved or rejected and return 303 after resume; task goals are redacted before SQLite persistence.
+- Dependency note: current Starlette emits a deprecation warning for its httpx-backed TestClient; pytest suppresses only that exact upstream warning category/message so project test output remains clean.

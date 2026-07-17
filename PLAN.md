@@ -191,16 +191,16 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] `resume_after_approval()` 必须原子消费已批准动作，执行并写审计；拒绝则任务 `cancelled`。
 - [x] 测试拒绝、一次性消费、SQLite 重启后仍能读取待审批项；提交 `feat: persist approval workflow`。
 
-## Task 9：FastAPI 与三页极简 WebUI
+## Task 9：FastAPI 与三页极简 WebUI — 已完成
 
 **文件：** 新建 `src/fr_harness/web.py`、`tests/test_web.py`
 **依赖：** Task 2、3、7、8
 
-- [ ] 先写失败 API 测试：`POST /tasks` 重定向至任务页；审批拒绝接口返回 303。
-- [ ] 实现 `create_app(database_path, llm) -> FastAPI`。
-- [ ] `GET /` 为任务创建页；`GET /tasks/{id}` 显示状态和转义后的审计 JSON；`GET /approvals` 列出待审批项。
-- [ ] 实现批准/拒绝 POST 路由；工作区必须存在且为目录；页面绝不展示 key。
-- [ ] 运行 API 测试并提交：`feat: add task and approval web ui`。
+- [x] 先写失败 API 测试：`POST /tasks` 重定向至任务页；审批拒绝接口返回 303。
+- [x] 实现 `create_app(database_path, llm) -> FastAPI`。
+- [x] `GET /` 为任务创建页；`GET /tasks/{id}` 显示状态和转义后的审计 JSON；`GET /approvals` 列出待审批项。
+- [x] 实现批准/拒绝 POST 路由；工作区必须存在且为目录；页面绝不展示 key。
+- [x] 运行 API 测试并提交：`feat: add task and approval web ui`。
 
 ## Task 10：CLI、安全配置与 Docker 分发
 

@@ -5,7 +5,7 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from fr_harness.models import Action, ApprovalDecision, Task, TaskStatus
-from fr_harness.security import redact_value
+from fr_harness.security import redact_secrets, redact_value
 
 
 @dataclass(frozen=True)
@@ -63,7 +63,7 @@ class Database:
             )
 
     def create_task(self, goal: str, workspace: Path) -> Task:
-        task = Task(id=uuid4(), goal=goal, workspace=workspace.resolve())
+        task = Task(id=uuid4(), goal=redact_secrets(goal), workspace=workspace.resolve())
         with self._connect() as connection:
             connection.execute(
                 """
