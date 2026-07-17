@@ -250,7 +250,13 @@ docker run --rm \
 - `unit-test`：在 Python 3.12 镜像中安装 `.[dev]` 并运行 `python -m pytest -v`。
 - `docker-build`：测试通过后使用 Docker-in-Docker 构建提交镜像。
 
-若仓库托管在其他平台，应把相同的两条验收命令映射到对应平台工作流。
+`.github/workflows/ci.yml` 在每次 push 和 PR 运行：
+
+- `unit-test`：Python 3.12 全量测试和 MockLLM 机制演示。
+- `docker-build`：构建镜像、冷启动、HTTP 200 和日志无测试凭据检查。
+- `publish-image`：仅 main 的前两项通过后，发布 `ghcr.io/rippleorapple/fr-harness:latest` 和 commit SHA tag。
+
+GHCR 包发布成功不自动等于“公共镜像”；最终交付还必须把 package visibility 设为 Public，并用未登录的空 Docker 配置匿名拉取验证。
 
 ## 项目结构
 
@@ -276,6 +282,7 @@ temp/*/          # 每个实施 Task 的 GOAL 与过程记录
 fr-harness.toml
 Dockerfile
 .gitlab-ci.yml
+.github/workflows/ci.yml
 SPEC.md
 PLAN.md
 SPEC_PROCESS.md
