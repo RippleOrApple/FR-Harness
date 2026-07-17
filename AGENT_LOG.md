@@ -17,3 +17,10 @@ Chronological records of skills, context, subagent work, human interventions, an
 - RED evidence: `.venv\\Scripts\\python.exe -m pytest tests/test_db.py -v` failed because `Database` was not exported by `fr_harness.db`.
 - GREEN evidence: the Task 2 tests passed (2 passed), then the full suite passed (4 passed).
 - Implementation: SQLite now initializes `tasks`, `events`, `approvals`, and `memory_entries`; the completed public methods are task creation/read and ordered JSON audit event persistence.
+
+## 2026-07-16 — Task 3: injectable LLM interfaces
+
+- Skills used: `executing-plans`, `test-driven-development`.
+- RED evidence: `.venv\\Scripts\\python.exe -m pytest tests/test_llm.py -v` failed because `MockLLM` and `OpenAICompatibleLLM` were absent.
+- GREEN evidence: Task 3 tests passed (3 passed), then the full suite passed (7 passed).
+- Implementation: `LLMClient` is a minimal protocol; MockLLM consumes deterministic action queues; the OpenAI-compatible client parses structured action JSON using an injected `httpx.Client` for offline tests.

@@ -186,7 +186,7 @@ git add src/fr_harness/db.py tests/test_db.py
 git commit -m "feat: persist tasks and audit events"
 ```
 
-## Task 3: Implement injectable LLM interfaces
+## Task 3: Implement injectable LLM interfaces — completed; see `AGENT_LOG.md`
 
 **Files:**
 - Create: `src/fr_harness/llm.py`
@@ -196,7 +196,7 @@ git commit -m "feat: persist tasks and audit events"
 - Consumes: `Action` from `models.py`.
 - Produces: `LLMClient.next_action(context: list[dict[str, str]]) -> Action`, `MockLLM(actions: list[Action])`, `OpenAICompatibleLLM(base_url, model, api_key)`.
 
-- [ ] **Step 1: Write the failing MockLLM test**
+- [x] **Step 1: Write the failing MockLLM test**
 
 ```python
 from fr_harness.llm import MockLLM
@@ -208,21 +208,21 @@ def test_mock_llm_returns_actions_in_order() -> None:
     assert client.next_action([]) == expected
 ```
 
-- [ ] **Step 2: Verify failure**
+- [x] **Step 2: Verify failure**
 
 Run: `python -m pytest tests/test_llm.py::test_mock_llm_returns_actions_in_order -v`  
 Expected: FAIL with import error.
 
-- [ ] **Step 3: Implement clients**
+- [x] **Step 3: Implement clients**
 
 Define a `Protocol` named `LLMClient`. `MockLLM` pops actions from a private list and raises `RuntimeError("mock action queue exhausted")` when empty. `OpenAICompatibleLLM` must use `httpx.Client`, send `POST {base_url}/chat/completions`, pass the key only in an Authorization header, parse the first message content as JSON, and validate it with `Action.model_validate_json`. Do not log the key or response headers.
 
-- [ ] **Step 4: Verify MockLLM and adapter parsing**
+- [x] **Step 4: Verify MockLLM and adapter parsing**
 
 Run: `python -m pytest tests/test_llm.py -v`  
 Expected: PASS; use `httpx.MockTransport` to assert adapter JSON parsing without network traffic.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/fr_harness/llm.py tests/test_llm.py
