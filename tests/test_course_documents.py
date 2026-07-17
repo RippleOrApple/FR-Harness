@@ -167,3 +167,14 @@ def test_agent_log_names_context_human_judgment_and_honest_deviation() -> None:
         "不能倒签",
     ):
         assert required in log
+
+
+def test_cold_start_process_contains_real_diff_and_irreversible_deviation() -> None:
+    process = (ROOT / "SPEC_PROCESS.md").read_text(encoding="utf-8")
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+
+    assert "```diff" in process
+    assert "+- `ActionKind` 的值固定为" in process
+    assert "+**实现约定：** `MemoryStore(Database)`" in process
+    assert "课程 §4.6 的历史偏差" in plan
+    assert "无法通过后补改写为合规历史" in plan

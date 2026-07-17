@@ -148,6 +148,9 @@ def _serve(host: str, port: int, store: CredentialStore) -> int:
     database_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         config = load_config()
+    except FileNotFoundError:
+        print("agent configuration file was not found", file=sys.stderr)
+        return 2
     except (OSError, ValueError, ValidationError):
         print("agent configuration is invalid", file=sys.stderr)
         return 2

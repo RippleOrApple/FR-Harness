@@ -102,3 +102,32 @@ def test_reject_approval_returns_303_and_cancels_task(tmp_path: Path) -> None:
     assert response.status_code == 303
     assert response.headers["location"] == f"/tasks/{task.id}"
     assert database.get_task(task.id).status is TaskStatus.CANCELLED
+
+
+def test_approve_endpoint_executes_the_persisted_action_once(tmp_path: Path) -> None:
+    workspace = tmp_path / "project"
+    workspace.mkdir()
+    target = workspace / "app.py"
+    target.write_text("old", encoding="utf-8")
+    client = make_client(
+        tmp_path,
+        [Action(kind=ActionKind.COMPLETE, reason="no passing pytest yet")],
+    )
+    database = client.app.state.database
+    task = database.create_task("overwrite app", workspace)
+    task.status = TaskStatus.PENDING_APPROVAL
+    database.update_task(task)
+    approval = database.create_approval(
+        task.id,
+        Action(kind=ActionKind.WRITE_FILE, path="app.py", content="new"),
+    )
+
+    response = client.post(
+        f"/approvals/{approval.id}/approve",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == f"/tasks/{task.id}"
+    assert target.read_text(encoding="utf-8") == "new"
+    assert database.get_approval(approval.id).decision.value == "consumed"

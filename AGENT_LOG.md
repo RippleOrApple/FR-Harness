@@ -141,3 +141,14 @@ Chronological records of skills, context, subagent work, human interventions, an
   - `124221a`：README/PLAN 与凭据、配置、模块和命令同步；GREEN 为 82 passed。
 - 偏差与诚实边界：早期 Task 1–12 没有逐 task 使用新鲜 subagent，也没有每个 task 都完成“规格检查 → 代码质量检查”的双阶段评审。当前计划中的 OpenCode 两次检查属于后补评审，不能倒签成当时已经发生的过程。
 - Review status: OpenCode 规格合规和代码质量后补评审尚未运行；只有实际运行并保存输出后才会标为完成。
+
+## 2026-07-17 — Task R8：OpenCode 双阶段后补评审
+
+- Skills used: `requesting-code-review`, `receiving-code-review`, `test-driven-development`.
+- 规格 review：全新 OpenCode `--pure` 附件会话指出线上 URL、历史 worktree/subagent/双评审、冷启动 diff、GitLab CI 附件和反思证据问题。人工判断接受冷启动真实 diff 和偏差显式标注；线上部署与学生反思保留为本轮范围外未完成；`.gitlab-ci.yml` 由仓库文件和自动测试证明存在。
+- 代码质量 review：另一个全新 `--pure` 会话报告 0 Critical、2 Major、7 Minor，并判定可进入 PR。
+- 人工判断：接受配置文件缺失错误分类、脱敏后重复动作假阳性和 Web approve 测试；不接受 WAL/连接池作为首版 Major，因为当前架构明确单进程单任务、连接短生命周期且 CAS 条件更新保持一次消费。
+- RED evidence：冷启动 diff 测试 1 failed；代码 review 三项测试为 2 failed、1 passed。
+- GREEN evidence：真实 `57fc02f` diff 已加入过程文档；原始动作改用 SHA-256 指纹比较且审计仍只存脱敏内容；配置缺失错误不输出路径；approve 路由有直接覆盖。目标测试通过，完整测试 91 passed。
+- Review artifacts: `temp/reviews/spec-compliance-review.md`、`temp/reviews/code-quality-review.md`。
+- 真实性：这是后补评审，不能倒签为 Task 1–12 当时已经执行的逐 task 双评审。

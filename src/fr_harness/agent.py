@@ -1,3 +1,5 @@
+import hashlib
+import json
 from collections.abc import Callable
 from pathlib import Path
 from uuid import UUID
@@ -82,12 +84,18 @@ class Agent:
             return self._fail(task, "llm error", error_type=type(error).__name__)
 
         task.iteration += 1
-        action_payload = self._safe_payload(action.model_dump(mode="json"))
+        raw_action_payload = action.model_dump(mode="json")
+        action_fingerprint = self._action_fingerprint(raw_action_payload)
+        action_payload = self._safe_payload(raw_action_payload)
+        action_payload["_fingerprint"] = action_fingerprint
         last_action = self._last_payload(events, "action")
         self.database.append_event(task.id, "action", action_payload)
         self.database.update_task(task)
 
-        if last_action == action_payload:
+        if (
+            last_action is not None
+            and last_action.get("_fingerprint") == action_fingerprint
+        ):
             return self._fail(task, "repeated action")
 
         try:
@@ -226,3 +234,13 @@ class Agent:
         if not isinstance(redacted, dict):
             raise TypeError("action payload must be a mapping")
         return redacted
+
+    @staticmethod
+    def _action_fingerprint(payload: dict[str, object]) -> str:
+        serialized = json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()

@@ -191,3 +191,21 @@ def test_serve_loads_declarative_config(
 
     app = captured["app"]
     assert app.state.agent.max_iterations == 3
+
+
+def test_serve_distinguishes_missing_config_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    missing = tmp_path / "missing.toml"
+    monkeypatch.setenv("FR_CONFIG_PATH", str(missing))
+    monkeypatch.setenv("FR_LLM_BASE_URL", "https://llm.invalid/v1")
+    monkeypatch.setenv("FR_LLM_MODEL", "test-model")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-secret")
+
+    assert cli.main(["serve"]) == 2
+
+    captured = capsys.readouterr()
+    assert "configuration file was not found" in captured.err
+    assert str(missing) not in captured.out + captured.err

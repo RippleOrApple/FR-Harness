@@ -59,6 +59,21 @@
 | Memory schema/API | 未定义 | 固定表字段和 `MemoryStore(Database)` |
 | Chat 格式 | 只有大致顺序 | 固定 role 与安全/记忆/反馈/目标顺序 |
 
+Git 提交 `57fc02f` 保存了当时的实际修订。以下是从该 commit 提取的关键 diff，而不是事后重写的示意文本：
+
+```diff
++## 5.1 核心数据模型与接口约定
++
++- `ActionKind` 的值固定为：`read_file`、`write_file`、`run_pytest`、`request_approval`、`complete`。
++- `ApprovalStateMachine` 是纯内存类；Task 8 才负责将审批持久化到 SQLite。
++- `resolve_workspace_path(root, value)` 必须对 root 和候选路径调用 `Path.resolve()`。
++- `MemoryStore` 构造函数接收 `Database`；`relevant(task_id, limit)` 按最新优先返回。
++- `build_context(goal, memories, feedback)` 返回 OpenAI Chat 格式并固定消息顺序与 role。
+
++**实现约定：** `GuardDecision` 与 `Approval` 均定义在 `guardrails.py`；状态机为无数据库依赖的纯内存实现。
++**实现约定：** `MemoryStore(Database)` 接收数据库实例；上下文前三类消息 role 为 `system`，用户目标 role 为 `user`。
+```
+
 ### 冷启动复验 — 2026-07-16
 
 - 使用另一个全新 OpenCode `--pure` 会话，仍只给更新后的 SPEC/PLAN。

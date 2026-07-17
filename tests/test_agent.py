@@ -142,3 +142,27 @@ def test_agent_fails_when_iteration_budget_is_exhausted(tmp_path: Path) -> None:
     assert result.iteration == 2
     assert database.list_events(task.id)[-1]["payload"]["reason"] == "iteration limit"
 
+
+def test_different_secret_values_do_not_look_like_a_repeated_action(
+    tmp_path: Path,
+) -> None:
+    database = make_database(tmp_path)
+    task = database.create_task("write rotating token", tmp_path)
+    first = "TOKEN=alpha-secret-value"
+    second = "TOKEN=beta-secret-value"
+    llm = RecordingLLM(
+        [
+            Action(kind=ActionKind.WRITE_FILE, path="token.txt", content=first),
+            Action(kind=ActionKind.WRITE_FILE, path="token.txt", content=second),
+        ]
+    )
+    agent = Agent(database, llm, classifier=allow_all)
+
+    agent.run_once(task.id)
+    result = agent.run_once(task.id)
+
+    assert result.status is TaskStatus.RUNNING
+    assert (tmp_path / "token.txt").read_text(encoding="utf-8") == second
+    serialized_events = repr(database.list_events(task.id))
+    assert first not in serialized_events
+    assert second not in serialized_events
