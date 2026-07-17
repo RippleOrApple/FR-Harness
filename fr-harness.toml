@@ -1,0 +1,7 @@
+[agent]
+max_iterations = 8
+memory_limit = 5
+
+[approvals]
+existing_file_write = true
+run_pytest = true

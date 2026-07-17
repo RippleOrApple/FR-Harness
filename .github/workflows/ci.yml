@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install ".[dev]"
+      - name: Unit tests
+        run: python -m pytest -v
+      - name: Deterministic mechanism demo
+        run: python demo/mock_repair_demo.py
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t fr-harness:ci .
+      - name: Cold-start image
+        run: >-
+          docker run -d --name fr-harness-ci
+          -p 127.0.0.1:18000:8000
+          -e FR_LLM_BASE_URL=https://llm.invalid/v1
+          -e FR_LLM_MODEL=ci-model
+          -e OPENAI_API_KEY=ci-placeholder
+          fr-harness:ci
+      - name: Verify HTTP and secret-free logs
+        shell: bash
+        run: |
+          ready=0
+          for attempt in {1..30}; do
+            if curl --fail http://127.0.0.1:18000/; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            docker logs fr-harness-ci
+            exit 1
+          fi
+          if docker logs fr-harness-ci 2>&1 | grep -F "ci-placeholder"; then
+            echo "credential appeared in container logs"
+            exit 1
+          fi
+      - name: Remove verification container
+        if: always()
+        run: docker rm -f fr-harness-ci
+
+  publish-image:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [unit-test, docker-build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/fr-harness
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=sha-
+      - name: Build and publish
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
