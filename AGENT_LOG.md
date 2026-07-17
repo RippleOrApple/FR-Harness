@@ -53,3 +53,11 @@ Chronological records of skills, context, subagent work, human interventions, an
 - RED evidence: `.venv\\Scripts\\python.exe -m pytest tests/test_llm.py -v` failed because `MockLLM` and `OpenAICompatibleLLM` were absent.
 - GREEN evidence: Task 3 tests passed (3 passed), then the full suite passed (7 passed).
 - Implementation: `LLMClient` is a minimal protocol; MockLLM consumes deterministic action queues; the OpenAI-compatible client parses structured action JSON using an injected `httpx.Client` for offline tests.
+
+## 2026-07-17 — Task 5：受限工具与 pytest 反馈解析
+
+- Skills used: `planning-with-files`, `test-driven-development`.
+- Process files: `temp/task-05/GOAL.md`, `task_plan.md`, `findings.md`, `progress.md`.
+- RED evidence: the first run exposed missing interfaces; after adding only `NotImplementedError` skeletons, all 8 behavior tests failed for the expected unimplemented behavior.
+- GREEN evidence: Task 5 tests passed (8 passed), then the full suite passed (21 passed).
+- Implementation: UTF-8 reads/writes are workspace-confined; pytest always uses the fixed current-interpreter command with `shell=False`; feedback parses failed node IDs, combines both streams and caps summaries at 2,000 characters.

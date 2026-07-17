@@ -145,16 +145,16 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 **实现约定：** `GuardDecision` 与 `Approval` 均定义在 `guardrails.py`；状态机为无数据库依赖的纯内存实现。必须用 `Path.resolve()` 防御 `..` 与符号链接逃逸；`write_file` 是否覆盖由已解析目标的 `exists()` 判定。
 
-## Task 5：受限工具与 pytest 反馈解析
+## Task 5：受限工具与 pytest 反馈解析 — 已完成
 
 **文件：** 新建 `src/fr_harness/tools.py`、`src/fr_harness/feedback.py`、`tests/test_tools.py`、`tests/test_feedback.py`
 **依赖：** Task 1、Task 4
 
-- [ ] 先写失败测试：文件读取返回 UTF-8 内容；失败输出中提取 `FAILED test_app.py::test_greeting`。
-- [ ] 实现 `parse_pytest_result(returncode, stdout, stderr) -> Feedback`：仅退出码 0 表示通过，摘要最长 2,000 字符。
-- [ ] 实现 `ToolDispatcher.execute(action, workspace) -> ToolResult`，只允许读文件、写文件和运行 pytest。
-- [ ] pytest 必须使用固定命令 `subprocess.run([sys.executable, "-m", "pytest", "-q"], ...)`，绝不能执行 LLM 给出的任意 shell 字符串。
-- [ ] 运行测试并提交：`feat: add constrained tools and pytest feedback`。
+- [x] 先写失败测试：文件读取返回 UTF-8 内容；失败输出中提取 `FAILED test_app.py::test_greeting`。
+- [x] 实现 `parse_pytest_result(returncode, stdout, stderr) -> Feedback`：仅退出码 0 表示通过，摘要最长 2,000 字符。
+- [x] 实现 `ToolDispatcher.execute(action, workspace) -> ToolResult`，只允许读文件、写文件和运行 pytest。
+- [x] pytest 必须使用固定命令 `subprocess.run([sys.executable, "-m", "pytest", "-q"], ...)`，绝不能执行 LLM 给出的任意 shell 字符串。
+- [x] 运行测试并提交：`feat: add constrained tools and pytest feedback`。
 
 ## Task 6：记忆仓储与上下文构建
 
