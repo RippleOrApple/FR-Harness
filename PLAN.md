@@ -39,24 +39,26 @@
 
 ---
 
-## 实现前强制关卡：陌生 Agent 冷启动验证 — 待补做
+## 实现前强制关卡：陌生 Agent 冷启动验证 — 已补做并通过
 
 > 课程要求此关卡必须在实现代码前完成。FR-Harness 已开始 Task 1–3 的实现，因此必须在继续 Task 4 前补做，并在 `SPEC_PROCESS.md` 中如实说明这是实施早期发现后补充的验证。
 
 **目标：** 用一个与主开发 Agent 不同类型、没有此前对话和记忆的全新 Agent，检验 `SPEC.md` 与 `PLAN.md` 是否足以让陌生执行者开始工作。
 
-- [ ] 选择一个不同类型的 Agent，例如主开发使用 Codex App 时，可使用 Claude Code、Cursor Agent、Gemini CLI 或 GitHub Copilot CLI。
-- [ ] 创建全新会话；不得导入本任务历史、既有 memory 或口头补充说明。
-- [ ] 仅提供仓库根目录的 `SPEC.md` 与 `PLAN.md`。
-- [ ] 指定该 Agent 从计划中选择 1–2 个尚未实施的 task；本项目推荐 Task 4 和 Task 6。
-- [ ] 明确要求：遇到规格、接口、路径、验收标准或安全边界不确定时，必须停止并逐项提问，禁止自行猜测后继续实现。
-- [ ] 在 `SPEC_PROCESS.md` 记录：测试 Agent 的类型、会话隔离方式、提供的材料、每个问题/暂停点、误读、产出与原意的差距。
-- [ ] 对每项暴露的问题，写明“修订前 → 修订后”的关键 diff；修改 `SPEC.md` 或 `PLAN.md` 后重新检查二者是否一致。
-- [ ] 只有冷启动记录完成并经人工确认后，才能继续 Task 4。
+- [x] 选择了不同类型的 OpenCode CLI Agent。
+- [x] 创建了全新 `--pure` 会话，不导入此前历史或 memory。
+- [x] 仅提供根目录 `SPEC.md` 与 `PLAN.md` 的副本。
+- [x] 指定评估尚未实施的 Task 4 和 Task 6。
+- [x] 要求其遇到不确定处停止，不得猜测实现。
+- [x] 已在 `SPEC_PROCESS.md` 记录 Agent、隔离方式、首次暂停点和差异。
+- [x] 已据首次反馈补充 SPEC §5.1 与 PLAN 的实现约定。
+- [x] 第二次全新会话确认文档无阻塞歧义；允许继续 Task 4。
 
 **通过标准：** 测试 Agent 能准确复述项目目标、识别 Task 4 的输入/输出/安全边界、找到正确文件路径；若不能，必须先修正文档而非开始编码。
 
-**第一次验证结果与修订：** OpenCode（`nju/deepseek-v4-flash`，全新 `--pure` 会话）仅获提供 SPEC/PLAN 后，准确识别 Task 4/6 的目标，但因 ActionKind、Approval、GuardDecision、MemoryStore、SQLite schema 与 Chat 上下文格式缺失而停止。对应的规范性定义已补入 `SPEC.md` §5.1；修订后需再次验证。
+**第一次验证结果与修订：** OpenCode（`nju/deepseek-v4-flash`，全新 `--pure` 会话）仅获提供 SPEC/PLAN 后，准确识别 Task 4/6 的目标，但因 ActionKind、Approval、GuardDecision、MemoryStore、SQLite schema 与 Chat 上下文格式缺失而停止。对应的规范性定义已补入 `SPEC.md` §5.1。
+
+**第二次验证结果：** 另一个全新 `--pure` OpenCode 会话仅获更新后的 SPEC/PLAN，判定“可以开始”；它正确给出 Task 4 的路径逃逸/未批准测试，以及 Task 6 的 Chat role/最近两条记忆测试。无阻塞性歧义。
 
 ---
 

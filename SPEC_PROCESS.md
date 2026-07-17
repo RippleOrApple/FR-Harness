@@ -30,3 +30,11 @@ This file will record brainstorming iterations and the required cold-start revie
 ### 结论
 
 第一次验证判定文档不足以安全开始 Task 4/6。以上修订完成后，需要再次用全新 OpenCode 会话复验；在复验通过前不继续 Task 4。
+
+## 冷启动复验 — 2026-07-16
+
+- 设置：使用另一个全新 `opencode run --pure` 会话，模型仍为 `nju/deepseek-v4-flash`；使用另一临时目录，目录中同样仅有更新后的 SPEC 与 PLAN 副本。
+- 结果：OpenCode 明确回答“可以开始”，没有提出阻塞性问题。
+- Task 4 首个测试建议：`resolve_workspace_path(..., "../secret.txt")` 抛出 `ValueError("outside workspace")`，以及 pending 审批的 `can_execute()` 返回 False。
+- Task 6 首个测试建议：`build_context("fix bug", [], None)` 的第一条为 system、最后一条为 user 目标；3 条记忆在 `limit=2` 时仅返回最新 2 条。
+- 结论：复验通过。文档现已足以继续实施 Task 4；先前 Task 1–3 早于验证开始的偏差已如实保留在本文件与 AGENT_LOG 中。

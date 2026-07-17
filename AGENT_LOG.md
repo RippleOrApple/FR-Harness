@@ -18,6 +18,12 @@ Chronological records of skills, context, subagent work, human interventions, an
 - Result: OpenCode correctly summarized Task 4/6 but stopped with 10 questions about missing type/schema/interface details. This was valid evidence that the specifications were insufficient.
 - Human-owned correction: added normative definitions to SPEC §5.1, detailed Task 4/6 implementation contracts in PLAN, and recorded the before/after differences in `SPEC_PROCESS.md`. A second clean verification is required before Task 4.
 
+## 2026-07-16 — OpenCode 冷启动验证（复验）
+
+- Tool and context: another new OpenCode `--pure` session; only updated SPEC/PLAN copies from a second isolated temporary directory were attached.
+- Result: OpenCode found no blocking ambiguity, correctly identified Task 4 path/approval tests and Task 6 context-role/recent-memory tests.
+- Decision: cold-start gate is now complete; Task 4 may begin. The original sequencing deviation remains documented rather than concealed.
+
 ## 2026-07-16 — Task 1: package foundation and domain models
 
 - Skills used: `using-git-worktrees`, `executing-plans`, `test-driven-development`.
