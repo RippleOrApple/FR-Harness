@@ -61,3 +61,11 @@ Chronological records of skills, context, subagent work, human interventions, an
 - RED evidence: the first run exposed missing interfaces; after adding only `NotImplementedError` skeletons, all 8 behavior tests failed for the expected unimplemented behavior.
 - GREEN evidence: Task 5 tests passed (8 passed), then the full suite passed (21 passed).
 - Implementation: UTF-8 reads/writes are workspace-confined; pytest always uses the fixed current-interpreter command with `shell=False`; feedback parses failed node IDs, combines both streams and caps summaries at 2,000 characters.
+
+## 2026-07-17 — Task 6：记忆仓储与上下文构建
+
+- Skills used: `planning-with-files`, `test-driven-development`.
+- Process files: `temp/task-06/GOAL.md`, `task_plan.md`, `findings.md`, `progress.md`.
+- RED evidence: after an import-only failure, minimal interfaces were introduced and all 3 behavior tests failed with `NotImplementedError`.
+- GREEN evidence: Task 6 tests passed (3 passed), then the full suite passed (24 passed).
+- Implementation: task memories are isolated and returned newest-first using the SQLite row id; Chat context has deterministic safety/memory/feedback/goal ordering; common key/token/secret assignments and OpenAI-style keys are redacted both before persistence and before injection.

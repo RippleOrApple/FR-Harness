@@ -156,16 +156,16 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] pytest 必须使用固定命令 `subprocess.run([sys.executable, "-m", "pytest", "-q"], ...)`，绝不能执行 LLM 给出的任意 shell 字符串。
 - [x] 运行测试并提交：`feat: add constrained tools and pytest feedback`。
 
-## Task 6：记忆仓储与上下文构建
+## Task 6：记忆仓储与上下文构建 — 已完成
 
 **文件：** 新建 `src/fr_harness/memory.py`、`tests/test_memory.py`
 **依赖：** Task 1、Task 2
 
-- [ ] 先写失败测试：上下文必须包含目标和最近失败尝试；`limit=2` 必须排除更早的记录。
-- [ ] 实现 `MemoryStore.add()` 与 `MemoryStore.relevant()`，保存至 `memory_entries`。
-- [ ] 实现 `build_context(goal, memories, feedback)`；顺序为系统安全约束、相关记忆、最近反馈、用户目标。
-- [ ] 不保存或注入凭据。
-- [ ] 运行测试并提交：`feat: add task memory context`。
+- [x] 先写失败测试：上下文必须包含目标和最近失败尝试；`limit=2` 必须排除更早的记录。
+- [x] 实现 `MemoryStore.add()` 与 `MemoryStore.relevant()`，保存至 `memory_entries`。
+- [x] 实现 `build_context(goal, memories, feedback)`；顺序为系统安全约束、相关记忆、最近反馈、用户目标。
+- [x] 不保存或注入凭据。
+- [x] 运行测试并提交：`feat: add task memory context`。
 
 **实现约定：** `MemoryStore(Database)` 接收数据库实例；`memory_entries` 字段为 `id`、`task_id`、`category`、`content`、`created_at`。上下文为 OpenAI Chat `list[dict[str, str]]`，前三类消息 role 为 `system`，最后的用户目标 role 为 `user`。
 

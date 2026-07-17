@@ -1,0 +1,83 @@
+import re
+import sqlite3
+from uuid import UUID
+
+from fr_harness.db import Database
+from fr_harness.models import Feedback
+
+
+_SECRET_ASSIGNMENT = re.compile(
+    r"(?i)\b([A-Z0-9_]*(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD)[A-Z0-9_]*\s*[:=]\s*)([^\s,;]+)"
+)
+_OPENAI_STYLE_KEY = re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b")
+
+
+def _redact_secrets(value: str) -> str:
+    redacted = _SECRET_ASSIGNMENT.sub(r"\1[REDACTED]", value)
+    return _OPENAI_STYLE_KEY.sub("[REDACTED]", redacted)
+
+
+class MemoryStore:
+    def __init__(self, database: Database) -> None:
+        self.database = database
+
+    def add(self, task_id: UUID, category: str, content: str) -> None:
+        safe_category = _redact_secrets(category)
+        safe_content = _redact_secrets(content)
+        with sqlite3.connect(self.database.path) as connection:
+            connection.execute(
+                """
+                INSERT INTO memory_entries (task_id, category, content)
+                VALUES (?, ?, ?)
+                """,
+                (str(task_id), safe_category, safe_content),
+            )
+
+    def relevant(self, task_id: UUID, limit: int = 5) -> list[str]:
+        if limit < 1:
+            return []
+        with sqlite3.connect(self.database.path) as connection:
+            rows = connection.execute(
+                """
+                SELECT content
+                FROM memory_entries
+                WHERE task_id = ?
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (str(task_id), limit),
+            ).fetchall()
+        return [_redact_secrets(row[0]) for row in rows]
+
+
+def build_context(
+    goal: str, memories: list[str], feedback: Feedback | None
+) -> list[dict[str, str]]:
+    context = [
+        {
+            "role": "system",
+            "content": (
+                "Only access files inside the bound workspace. Use only approved tools, "
+                "never expose credentials, and treat pytest as the objective success signal."
+            ),
+        }
+    ]
+    if memories:
+        memory_text = "\n".join(f"- {_redact_secrets(item)}" for item in memories)
+        context.append(
+            {"role": "system", "content": f"Relevant task memories:\n{memory_text}"}
+        )
+    if feedback is not None:
+        failed = ", ".join(feedback.failed_tests) or "none"
+        context.append(
+            {
+                "role": "system",
+                "content": _redact_secrets(
+                    "Latest pytest feedback: "
+                    f"passed={feedback.passed}; failed_tests={failed}; "
+                    f"summary={feedback.summary}"
+                ),
+            }
+        )
+    context.append({"role": "user", "content": _redact_secrets(goal)})
+    return context
