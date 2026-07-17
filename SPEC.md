@@ -94,6 +94,21 @@ running → failed
 | `web` | FastAPI 路由、任务/详情/审批页面 |
 | `cli` | 初始化、启动服务、测试等管理命令 |
 
+## 5.1 核心数据模型与接口约定
+
+为使各任务可独立实现，以下定义是规范性的：
+
+- `ActionKind` 的值固定为：`read_file`、`write_file`、`run_pytest`、`request_approval`、`complete`。
+- `Action` 固定字段为 `kind: ActionKind`、`path: str | None`、`content: str | None`、`reason: str | None`。
+- `GuardDecision` 定义在 `guardrails.py`，枚举值为 `allowed`、`requires_approval`、`blocked`。
+- `Approval` 定义在 `guardrails.py`，字段为 `id: UUID`、`kind: str`、`description: str`、`decision: ApprovalDecision`；首版内存状态机不依赖数据库。
+- `ApprovalStateMachine` 是纯内存类；构造函数不接收参数。`create(kind, description)` 创建 pending 记录，`approve(id)` 与 `reject(id)` 改变决定，`consume(id)` 仅能将 approved 记录变为 consumed 一次。Task 8 才负责将审批持久化到 SQLite。
+- `resolve_workspace_path(root, value)` 必须对 root 和候选路径调用 `Path.resolve()`，因此符号链接逃逸也被拒绝；候选路径不是已解析 root 的子路径时抛出 `ValueError("outside workspace")`。
+- `classify(action, root)` 可访问文件系统：`write_file` 的目标存在时为 `requires_approval`，目标不存在时为 `allowed`；`run_pytest` 为 `requires_approval`；路径逃逸为 `blocked`；`read_file` 为 `allowed`。
+- `memory_entries` 表的字段为 `id INTEGER PRIMARY KEY AUTOINCREMENT`、`task_id TEXT NOT NULL`、`category TEXT NOT NULL`、`content TEXT NOT NULL`、`created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP`。
+- `MemoryStore` 构造函数接收 `Database`；`add(task_id, category, content)` 写入上述表；`relevant(task_id, limit)` 按最新优先返回至多 limit 条内容。
+- `build_context(goal, memories, feedback)` 返回 OpenAI Chat 格式的 `list[dict[str, str]]`。消息顺序固定为：安全约束 system 消息、相关记忆 system 消息、最近测试反馈 system 消息（若有）、用户目标 user 消息。
+
 ## 6. 核心机制
 
 ### 6.1 自建 Agent 主循环

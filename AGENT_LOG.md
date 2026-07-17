@@ -12,6 +12,12 @@ Chronological records of skills, context, subagent work, human interventions, an
 - Human intervention: user identified that the required unfamiliar-agent cold-start verification was missing from the implementation-before gate in `PLAN.md`.
 - Decision: add it as a mandatory gate before Task 4, with the required isolated-session, documents-only, pause-on-uncertainty, and before/after-diff evidence requirements. Tasks 1–3 were already implemented; the later `SPEC_PROCESS.md` entry must disclose this sequencing deviation honestly.
 
+## 2026-07-16 — OpenCode 冷启动验证（第一次）
+
+- Tool and context: OpenCode CLI 1.17.18, `nju/deepseek-v4-flash`, new `--pure` session; only copied root `SPEC.md` and `PLAN.md` were attached from an isolated temporary directory.
+- Result: OpenCode correctly summarized Task 4/6 but stopped with 10 questions about missing type/schema/interface details. This was valid evidence that the specifications were insufficient.
+- Human-owned correction: added normative definitions to SPEC §5.1, detailed Task 4/6 implementation contracts in PLAN, and recorded the before/after differences in `SPEC_PROCESS.md`. A second clean verification is required before Task 4.
+
 ## 2026-07-16 — Task 1: package foundation and domain models
 
 - Skills used: `using-git-worktrees`, `executing-plans`, `test-driven-development`.

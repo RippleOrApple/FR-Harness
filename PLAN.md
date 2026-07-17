@@ -56,6 +56,8 @@
 
 **通过标准：** 测试 Agent 能准确复述项目目标、识别 Task 4 的输入/输出/安全边界、找到正确文件路径；若不能，必须先修正文档而非开始编码。
 
+**第一次验证结果与修订：** OpenCode（`nju/deepseek-v4-flash`，全新 `--pure` 会话）仅获提供 SPEC/PLAN 后，准确识别 Task 4/6 的目标，但因 ActionKind、Approval、GuardDecision、MemoryStore、SQLite schema 与 Chat 上下文格式缺失而停止。对应的规范性定义已补入 `SPEC.md` §5.1；修订后需再次验证。
+
 ---
 
 ## Task 1：包基础与领域模型 — 已完成
@@ -139,6 +141,8 @@ ApprovalStateMachine.approve(approval_id: UUID) -> None
 ApprovalStateMachine.reject(approval_id: UUID) -> None
 ```
 
+**实现约定：** `GuardDecision` 与 `Approval` 均定义在 `guardrails.py`；状态机为无数据库依赖的纯内存实现。必须用 `Path.resolve()` 防御 `..` 与符号链接逃逸；`write_file` 是否覆盖由已解析目标的 `exists()` 判定。
+
 ## Task 5：受限工具与 pytest 反馈解析
 
 **文件：** 新建 `src/fr_harness/tools.py`、`src/fr_harness/feedback.py`、`tests/test_tools.py`、`tests/test_feedback.py`
@@ -160,6 +164,8 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [ ] 实现 `build_context(goal, memories, feedback)`；顺序为系统安全约束、相关记忆、最近反馈、用户目标。
 - [ ] 不保存或注入凭据。
 - [ ] 运行测试并提交：`feat: add task memory context`。
+
+**实现约定：** `MemoryStore(Database)` 接收数据库实例；`memory_entries` 字段为 `id`、`task_id`、`category`、`content`、`created_at`。上下文为 OpenAI Chat `list[dict[str, str]]`，前三类消息 role 为 `system`，最后的用户目标 role 为 `user`。
 
 ## Task 7：自建 Agent 主循环
 
