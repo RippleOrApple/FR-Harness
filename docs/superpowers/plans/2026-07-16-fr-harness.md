@@ -42,7 +42,7 @@
 | `.gitlab-ci.yml` | required `unit-test` CI job |
 | `README.md` | setup, safe credential configuration, tests, Docker, limitations |
 
-## Task 1: Create package foundation and domain models
+## Task 1: Create package foundation and domain models — completed; see `AGENT_LOG.md`
 
 **Files:**
 - Create: `pyproject.toml`
@@ -53,7 +53,7 @@
 **Interfaces:**
 - Produces `TaskStatus`, `ActionKind`, `ApprovalDecision`, `Action`, `Task`, `Feedback`, and `ToolResult` for all later tasks.
 
-- [ ] **Step 1: Write the failing model tests**
+- [x] **Step 1: Write the failing model tests**
 
 ```python
 from fr_harness.models import Action, ActionKind, TaskStatus
@@ -67,12 +67,12 @@ def test_task_status_has_pending_approval() -> None:
     assert TaskStatus.PENDING_APPROVAL.value == "pending_approval"
 ```
 
-- [ ] **Step 2: Run the tests to verify failure**
+- [x] **Step 2: Run the tests to verify failure**
 
 Run: `python -m pytest tests/test_models.py -v`  
 Expected: FAIL with `ModuleNotFoundError: No module named 'fr_harness'`.
 
-- [ ] **Step 3: Add package metadata and minimal models**
+- [x] **Step 3: Add package metadata and minimal models**
 
 ```toml
 [project]
@@ -131,12 +131,12 @@ class ToolResult(BaseModel):
     feedback: Feedback | None = None
 ```
 
-- [ ] **Step 4: Run the model tests to verify success**
+- [x] **Step 4: Run the model tests to verify success**
 
 Run: `python -m pytest tests/test_models.py -v`  
 Expected: PASS (2 passed).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add pyproject.toml src/fr_harness tests/test_models.py
