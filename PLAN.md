@@ -39,6 +39,25 @@
 
 ---
 
+## 实现前强制关卡：陌生 Agent 冷启动验证 — 待补做
+
+> 课程要求此关卡必须在实现代码前完成。FR-Harness 已开始 Task 1–3 的实现，因此必须在继续 Task 4 前补做，并在 `SPEC_PROCESS.md` 中如实说明这是实施早期发现后补充的验证。
+
+**目标：** 用一个与主开发 Agent 不同类型、没有此前对话和记忆的全新 Agent，检验 `SPEC.md` 与 `PLAN.md` 是否足以让陌生执行者开始工作。
+
+- [ ] 选择一个不同类型的 Agent，例如主开发使用 Codex App 时，可使用 Claude Code、Cursor Agent、Gemini CLI 或 GitHub Copilot CLI。
+- [ ] 创建全新会话；不得导入本任务历史、既有 memory 或口头补充说明。
+- [ ] 仅提供仓库根目录的 `SPEC.md` 与 `PLAN.md`。
+- [ ] 指定该 Agent 从计划中选择 1–2 个尚未实施的 task；本项目推荐 Task 4 和 Task 6。
+- [ ] 明确要求：遇到规格、接口、路径、验收标准或安全边界不确定时，必须停止并逐项提问，禁止自行猜测后继续实现。
+- [ ] 在 `SPEC_PROCESS.md` 记录：测试 Agent 的类型、会话隔离方式、提供的材料、每个问题/暂停点、误读、产出与原意的差距。
+- [ ] 对每项暴露的问题，写明“修订前 → 修订后”的关键 diff；修改 `SPEC.md` 或 `PLAN.md` 后重新检查二者是否一致。
+- [ ] 只有冷启动记录完成并经人工确认后，才能继续 Task 4。
+
+**通过标准：** 测试 Agent 能准确复述项目目标、识别 Task 4 的输入/输出/安全边界、找到正确文件路径；若不能，必须先修正文档而非开始编码。
+
+---
+
 ## Task 1：包基础与领域模型 — 已完成
 
 **提交：** `915b27b feat: add domain models`
@@ -196,7 +215,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [ ] 输出三行：`guardrail approval: PASS`、`feedback repair: PASS`、`approval one-time use: PASS`。
 - [ ] 运行 `python demo/mock_repair_demo.py` 与测试后，提交 `test: add deterministic mechanism demo`。
 
-## Task 12：CI、README 与冷启动验证
+## Task 12：CI、README 与发布验证
 
 **文件：** 修改 `.gitlab-ci.yml`、`README.md`；新建 `tests/test_readme_security.py`
 **依赖：** Task 10、11
@@ -204,7 +223,6 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [ ] 先写 README 失败测试，要求包含 `OPENAI_API_KEY`、`.env`、`明文`、`docker build`。
 - [ ] CI 必须有名为 `unit-test` 的 job，安装 `.[dev]` 后运行 `python -m pytest -v`；可选增加镜像构建 job。
 - [ ] README 必须用 UTF-8，说明项目、架构、安装、测试、WebUI、Mock 演示、Docker、Key 安全、`.env` 明文风险、工作区边界、限制和目录结构。
-- [ ] 按课程要求用不同类型的全新 Agent，仅给 `SPEC.md` 与本文件，尝试 1–2 个任务；把提问、误读、改动写进 `SPEC_PROCESS.md`。
 - [ ] 完整运行 `python -m pytest -v`、`python demo/mock_repair_demo.py`、Docker 冷启动验证；提交 `docs: add release and security guide`。
 
 ## 依赖关系与可并行项

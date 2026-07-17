@@ -7,6 +7,11 @@ Chronological records of skills, context, subagent work, human interventions, an
 - Human intervention: move the active branch from the nested `.worktrees/` directory to the `FR-Harness` root and keep substantive documents in root `SPEC.md` and `PLAN.md`.
 - Decision: delete the `docs/` copies after migrating their full contents to root documents; preserve the existing implementation commits and do not modify the untracked `A任务完成指南.md` in the original checkout.
 
+## 2026-07-16 — 冷启动验证流程补正
+
+- Human intervention: user identified that the required unfamiliar-agent cold-start verification was missing from the implementation-before gate in `PLAN.md`.
+- Decision: add it as a mandatory gate before Task 4, with the required isolated-session, documents-only, pause-on-uncertainty, and before/after-diff evidence requirements. Tasks 1–3 were already implemented; the later `SPEC_PROCESS.md` entry must disclose this sequencing deviation honestly.
+
 ## 2026-07-16 — Task 1: package foundation and domain models
 
 - Skills used: `using-git-worktrees`, `executing-plans`, `test-driven-development`.
