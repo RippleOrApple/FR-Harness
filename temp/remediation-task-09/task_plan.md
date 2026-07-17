@@ -6,7 +6,7 @@
 
 ## Current Phase
 
-Phase 2
+Complete
 
 ## Phases
 
@@ -21,21 +21,21 @@ Phase 2
 
 - [x] 记录 Task 8 远程证据
 - [x] 创建 Task 9 GOAL 与执行文件
-- [ ] 提交并推送最新证据
-- **Status:** in_progress
+- [x] 提交并推送最新证据
+- **Status:** complete
 
 ### Phase 3: Hosted Verification
 
-- [ ] 等待最新 head 的 `unit-test`
-- [ ] 等待最新 head 的 `docker-build`
-- [ ] 核对 `publish-image` 条件
-- **Status:** pending
+- [x] 等待最新 head 的 `unit-test`
+- [x] 等待最新 head 的 `docker-build`
+- [x] 核对 `publish-image` 条件
+- **Status:** complete
 
 ### Phase 4: Handoff
 
-- [ ] 记录 run/job URL 与结论
-- [ ] 确认 PR 可安全合并
-- **Status:** pending
+- [x] 记录 run/job URL 与结论
+- [x] 确认 PR 可安全合并
+- **Status:** complete
 
 ## Decisions Made
 

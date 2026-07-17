@@ -25,3 +25,13 @@
 - Run 29563901366
 - unit-test: https://github.com/RippleOrApple/FR-Harness/actions/runs/29563901366/job/87832108464
 - docker-build: https://github.com/RippleOrApple/FR-Harness/actions/runs/29563901366/job/87832108459
+
+## Latest Verified Head Evidence
+
+- PR head: `94ae350`
+- pull_request run: https://github.com/RippleOrApple/FR-Harness/actions/runs/29564094708
+- unit-test: https://github.com/RippleOrApple/FR-Harness/actions/runs/29564094708/job/87832705059 — success, 19s
+- docker-build: https://github.com/RippleOrApple/FR-Harness/actions/runs/29564094708/job/87832705023 — success, 20s
+- publish-image: skipped；该 job 只允许 main push。
+
+最终仅文档化提交会再触发一次相同门禁；其精确 run URL 发布到 PR 评论，以避免为记录自身 CI URL 而无限创建新提交。

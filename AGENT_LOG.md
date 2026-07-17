@@ -164,5 +164,11 @@ Chronological records of skills, context, subagent work, human interventions, an
 - OpenCode 规格合规与代码质量摘要已分别发布为 PR 评论。
 - PR 首轮 GitHub Actions：`unit-test` success、`docker-build` success；`publish-image` 因非 main push 按设计 skipped。
 - Task 9 使用 `temp/remediation-task-09/GOAL.md` 进入最新 head 的托管 CI 验证。
+
+### 2026-07-17：Task 9 GitHub Actions
+
+- PR head `94ae350` 的 pull_request run 29564094708 已完成。
+- `unit-test` success（19s），`docker-build` success（20s），`publish-image` 按分支条件 skipped。
+- Task 10 的 GOAL 已在合并前创建；下一步为最终 PR 门禁、合并和 GHCR 匿名验证。
 - Review artifacts: `temp/reviews/spec-compliance-review.md`、`temp/reviews/code-quality-review.md`。
 - 真实性：这是后补评审，不能倒签为 Task 1–12 当时已经执行的逐 task 双评审。
