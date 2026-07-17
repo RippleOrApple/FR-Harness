@@ -20,9 +20,12 @@
 
 ### PR
 
-- **Status:** in_progress
+- **Status:** complete
 - Actions taken:
-  - 准备 review commit、push、PR 和评论。
+  - 修复 GH007：仅重写未推送分支为 GitHub noreply 作者身份，并同步哈希证据。
+  - 推送 `setup-scaffold` 并创建正式 PR #1。
+  - 发布规格合规和代码质量两条远程 review 摘要。
+  - PR 首轮 `unit-test`、`docker-build` 均成功。
 
 ## Test Results
 
@@ -32,13 +35,15 @@
 | 凭据扫描 | 0 match | 工作树 0、历史 0 | ✓ |
 | Review RED | 采纳问题可复现 | 文档 1 failed；代码 2 failed/1 passed | ✓ |
 | Review GREEN | 修复通过 | 目标通过；全量 91 passed | ✓ |
+| PR | URL 可访问 | https://github.com/RippleOrApple/FR-Harness/pull/1 | ✓ |
+| Review 评论 | 两条可追溯 | issuecomment-5000277406、issuecomment-5000277654 | ✓ |
 
 ## 5-Question Reboot Check
 
 | Question | Answer |
 |---|---|
-| Where am I? | Task 8 PR 阶段 |
-| Where am I going? | commit、push、PR、评论 |
+| Where am I? | Task 8 已完成 |
+| Where am I going? | Task 9 最终 CI 验证 |
 | What's the goal? | 独立 review 与远程证据 |
 | What have I learned? | OpenCode 只读 review 最合适 |
-| What have I done? | 双评审、人工判断、TDD 修复 |
+| What have I done? | 双评审、人工判断、TDD 修复、PR 与评论 |

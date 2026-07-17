@@ -6,7 +6,7 @@
 
 ## Current Phase
 
-Phase 1
+Complete
 
 ## Phases
 
@@ -33,9 +33,9 @@ Phase 1
 ### Phase 4: PR
 
 - [x] 最终验证和 review commit 准备
-- [ ] push 分支和创建 PR
-- [ ] 发布两条 review 摘要
-- **Status:** in_progress
+- [x] push 分支和创建 PR
+- [x] 发布两条 review 摘要
+- **Status:** complete
 
 ## Decisions Made
 
@@ -43,3 +43,4 @@ Phase 1
 |---|---|
 | OpenCode 使用两个全新 `--pure` 会话 | 降低共享上下文偏差 |
 | 意见按证据人工验证 | 外部 review 是建议，不是命令 |
+| GitHub 连接器未登录时使用已认证 `gh` | 保留相同远程评论结果，不阻塞证据链 |

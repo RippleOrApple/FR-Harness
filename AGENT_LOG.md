@@ -157,5 +157,12 @@ Chronological records of skills, context, subagent work, human interventions, an
 - 保留 `origin/main` 不变，仅将尚未推送的 `setup-scaffold` 历史作者与提交者改为 GitHub noreply 身份。
 - 历史重写导致提交哈希变化；`PLAN.md`、`SPEC_PROCESS.md`、测试和过程证据已同步到新哈希。
 - 未关闭 GitHub 邮箱隐私保护，未公开学校邮箱；未跟踪的 `A任务完成指南.md` 未被改动。
+
+### 2026-07-17：Task 8 远程 PR 证据
+
+- `setup-scaffold` 已推送，正式 PR #1：https://github.com/RippleOrApple/FR-Harness/pull/1
+- OpenCode 规格合规与代码质量摘要已分别发布为 PR 评论。
+- PR 首轮 GitHub Actions：`unit-test` success、`docker-build` success；`publish-image` 因非 main push 按设计 skipped。
+- Task 9 使用 `temp/remediation-task-09/GOAL.md` 进入最新 head 的托管 CI 验证。
 - Review artifacts: `temp/reviews/spec-compliance-review.md`、`temp/reviews/code-quality-review.md`。
 - 真实性：这是后补评审，不能倒签为 Task 1–12 当时已经执行的逐 task 双评审。
