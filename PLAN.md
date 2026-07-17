@@ -223,15 +223,15 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] 输出三行：`guardrail approval: PASS`、`feedback repair: PASS`、`approval one-time use: PASS`。
 - [x] 运行 `python demo/mock_repair_demo.py` 与测试后，提交 `test: add deterministic mechanism demo`。
 
-## Task 12：CI、README 与发布验证
+## Task 12：CI、README 与发布验证 — 已完成
 
 **文件：** 修改 `.gitlab-ci.yml`、`README.md`；新建 `tests/test_readme_security.py`
 **依赖：** Task 10、11
 
-- [ ] 先写 README 失败测试，要求包含 `OPENAI_API_KEY`、`.env`、`明文`、`docker build`。
-- [ ] CI 必须有名为 `unit-test` 的 job，安装 `.[dev]` 后运行 `python -m pytest -v`；可选增加镜像构建 job。
-- [ ] README 必须用 UTF-8，说明项目、架构、安装、测试、WebUI、Mock 演示、Docker、Key 安全、`.env` 明文风险、工作区边界、限制和目录结构。
-- [ ] 完整运行 `python -m pytest -v`、`python demo/mock_repair_demo.py`、Docker 冷启动验证；提交 `docs: add release and security guide`。
+- [x] 先写 README 失败测试，要求包含 `OPENAI_API_KEY`、`.env`、`明文`、`docker build`。
+- [x] CI 必须有名为 `unit-test` 的 job，安装 `.[dev]` 后运行 `python -m pytest -v`；可选增加镜像构建 job。
+- [x] README 必须用 UTF-8，说明项目、架构、安装、测试、WebUI、Mock 演示、Docker、Key 安全、`.env` 明文风险、工作区边界、限制和目录结构。
+- [x] 完整运行 `python -m pytest -v`、`python demo/mock_repair_demo.py`、Docker 冷启动验证；提交 `docs: add release and security guide`。
 
 ## 依赖关系与可并行项
 

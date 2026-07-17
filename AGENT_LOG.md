@@ -115,3 +115,13 @@ Chronological records of skills, context, subagent work, human interventions, an
 - GREEN evidence: direct execution printed exactly the three required PASS lines; demo tests passed (2 passed); the full suite passed (47 passed).
 - Implementation: one TemporaryDirectory scenario proves pause-before-overwrite and consumed-only-once behavior across SQLite approval state; a second real temporary pytest project proves feedback changes from failed to passed before completion; neither reads environment credentials nor constructs a network client.
 - Debugging lesson: Windows cleanup initially failed because SQLite connection context managers commit/rollback but do not close. Database and MemoryStore connections now close explicitly, so TemporaryDirectory cleanup is deterministic.
+
+## 2026-07-17 — Task 12：CI、README 与发布验证
+
+- Skills used: `planning-with-files`, `test-driven-development`, `verification-before-completion`.
+- Process files: `temp/task-12/GOAL.md`, `task_plan.md`, `findings.md`, `progress.md`.
+- RED evidence: both documentation tests failed because README lacked the required security/usage content and `.gitlab-ci.yml` was empty.
+- GREEN evidence: documentation/CI tests passed (2 passed); the fresh full verbose suite passed (49 passed); the deterministic demo printed exactly three PASS lines.
+- Documentation: UTF-8 README now covers architecture, install, configuration, CLI, WebUI, Mock demo, Docker, CI, key handling, `.env` plaintext risk, workspace boundaries, limitations and structure. Personal reflection remains explicitly student-authored.
+- Release evidence: the final `fr-harness:local` image built successfully; a uniquely named container started with an offline placeholder endpoint, remained `running`, returned HTTP 200 from a random localhost port, did not include the test key in logs, and was removed after verification.
+- Security evidence: tracked-file scan found no `sk-` credential-shaped value with 20 or more key characters; the only remaining untracked file is the user's pre-existing `A任务完成指南.md`.
