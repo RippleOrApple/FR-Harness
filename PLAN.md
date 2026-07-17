@@ -213,15 +213,15 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] Docker 基于 `python:3.12-slim`，暴露 8000，启动 Uvicorn；`.dockerignore` 排除 `.git`、`.env`、`.venv`、缓存和 SQLite。
 - [x] 运行 `docker build -t fr-harness:local .` 并提交 `feat: add cli and docker distribution`。
 
-## Task 11：MockLLM 机制演示
+## Task 11：MockLLM 机制演示 — 已完成
 
 **文件：** 新建 `demo/mock_repair_demo.py`、`tests/test_demo.py`
 **依赖：** Task 7、8
 
-- [ ] 测试必须执行演示脚本，并断言退出码为 0。
-- [ ] 脚本只用 `TemporaryDirectory`、临时 pytest 项目和 MockLLM；不得读取真实 key 或发网络请求。
-- [ ] 输出三行：`guardrail approval: PASS`、`feedback repair: PASS`、`approval one-time use: PASS`。
-- [ ] 运行 `python demo/mock_repair_demo.py` 与测试后，提交 `test: add deterministic mechanism demo`。
+- [x] 测试必须执行演示脚本，并断言退出码为 0。
+- [x] 脚本只用 `TemporaryDirectory`、临时 pytest 项目和 MockLLM；不得读取真实 key 或发网络请求。
+- [x] 输出三行：`guardrail approval: PASS`、`feedback repair: PASS`、`approval one-time use: PASS`。
+- [x] 运行 `python demo/mock_repair_demo.py` 与测试后，提交 `test: add deterministic mechanism demo`。
 
 ## Task 12：CI、README 与发布验证
 

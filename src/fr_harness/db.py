@@ -1,5 +1,7 @@
 import json
 import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -21,10 +23,15 @@ class Database:
     def __init__(self, path: Path) -> None:
         self.path = path
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
         connection = sqlite3.connect(self.path, check_same_thread=False)
         connection.row_factory = sqlite3.Row
-        return connection
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def initialize(self) -> None:
         with self._connect() as connection:
@@ -106,7 +113,8 @@ class Database:
                     str(task.id),
                 ),
             )
-        if cursor.rowcount != 1:
+            updated = cursor.rowcount
+        if updated != 1:
             raise KeyError(f"unknown task: {task.id}")
 
     def append_event(self, task_id: UUID, kind: str, payload: dict[str, object]) -> None:

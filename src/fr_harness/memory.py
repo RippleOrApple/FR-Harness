@@ -1,4 +1,5 @@
 import sqlite3
+from contextlib import closing
 from uuid import UUID
 
 from fr_harness.db import Database
@@ -13,7 +14,7 @@ class MemoryStore:
     def add(self, task_id: UUID, category: str, content: str) -> None:
         safe_category = redact_secrets(category)
         safe_content = redact_secrets(content)
-        with sqlite3.connect(self.database.path) as connection:
+        with closing(sqlite3.connect(self.database.path)) as connection, connection:
             connection.execute(
                 """
                 INSERT INTO memory_entries (task_id, category, content)
@@ -25,7 +26,7 @@ class MemoryStore:
     def relevant(self, task_id: UUID, limit: int = 5) -> list[str]:
         if limit < 1:
             return []
-        with sqlite3.connect(self.database.path) as connection:
+        with closing(sqlite3.connect(self.database.path)) as connection, connection:
             rows = connection.execute(
                 """
                 SELECT content

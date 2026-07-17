@@ -106,3 +106,12 @@ Chronological records of skills, context, subagent work, human interventions, an
 - GREEN evidence: Task 10 tests passed (4 passed), then the full suite passed (45 passed).
 - Implementation: `init` initializes SQLite, `serve` reads only the named environment settings and starts Uvicorn without echoing them, and `test` uses a fixed interpreter/pytest argument list with `shell=False`; container context excludes Git, env files, virtualenvs, caches, SQLite and process docs.
 - Docker evidence: Docker Desktop Engine 29.6.1 was started in the background after the first daemon connection failed; `docker build -t fr-harness:local .` then completed successfully and produced `fr-harness:local` from `python:3.12-slim`.
+
+## 2026-07-17 — Task 11：MockLLM 确定性机制演示
+
+- Skills used: `planning-with-files`, `test-driven-development`, `systematic-debugging`.
+- Process files: `temp/task-11/GOAL.md`, `task_plan.md`, `findings.md`, `progress.md`.
+- RED evidence: both demo tests failed because the script did not exist.
+- GREEN evidence: direct execution printed exactly the three required PASS lines; demo tests passed (2 passed); the full suite passed (47 passed).
+- Implementation: one TemporaryDirectory scenario proves pause-before-overwrite and consumed-only-once behavior across SQLite approval state; a second real temporary pytest project proves feedback changes from failed to passed before completion; neither reads environment credentials nor constructs a network client.
+- Debugging lesson: Windows cleanup initially failed because SQLite connection context managers commit/rollback but do not close. Database and MemoryStore connections now close explicitly, so TemporaryDirectory cleanup is deterministic.
