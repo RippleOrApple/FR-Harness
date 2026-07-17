@@ -97,3 +97,12 @@ Chronological records of skills, context, subagent work, human interventions, an
 - GREEN evidence: Web tests passed (6 passed), then the full suite passed cleanly (41 passed).
 - Implementation: URL-encoded task creation validates an existing directory and runs synchronously to a stop; detail pages HTML-escape goal/workspace/audit JSON; pending approvals can be approved or rejected and return 303 after resume; task goals are redacted before SQLite persistence.
 - Dependency note: current Starlette emits a deprecation warning for its httpx-backed TestClient; pytest suppresses only that exact upstream warning category/message so project test output remains clean.
+
+## 2026-07-17 — Task 10：CLI、安全配置与 Docker 分发
+
+- Skills used: `planning-with-files`, `test-driven-development`.
+- Process files: `temp/task-10/GOAL.md`, `task_plan.md`, `findings.md`, `progress.md`.
+- RED evidence: 4 tests failed because CLI symbols and Docker distribution content were absent.
+- GREEN evidence: Task 10 tests passed (4 passed), then the full suite passed (45 passed).
+- Implementation: `init` initializes SQLite, `serve` reads only the named environment settings and starts Uvicorn without echoing them, and `test` uses a fixed interpreter/pytest argument list with `shell=False`; container context excludes Git, env files, virtualenvs, caches, SQLite and process docs.
+- Docker evidence: Docker Desktop Engine 29.6.1 was started in the background after the first daemon connection failed; `docker build -t fr-harness:local .` then completed successfully and produced `fr-harness:local` from `python:3.12-slim`.

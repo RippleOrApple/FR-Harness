@@ -202,16 +202,16 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] 实现批准/拒绝 POST 路由；工作区必须存在且为目录；页面绝不展示 key。
 - [x] 运行 API 测试并提交：`feat: add task and approval web ui`。
 
-## Task 10：CLI、安全配置与 Docker 分发
+## Task 10：CLI、安全配置与 Docker 分发 — 已完成
 
 **文件：** 修改/新建 `cli.py`、`Dockerfile`、`.dockerignore`、`.env.example`、`tests/test_cli.py`
 **依赖：** Task 2、3、9
 
-- [ ] 先写失败测试：`init` 创建数据库，标准输出不得含 `OPENAI_API_KEY`。
-- [ ] 实现 `python -m fr_harness.cli init|serve|test`。
-- [ ] `serve` 仅从环境读取 `FR_DATABASE_PATH`、`FR_LLM_BASE_URL`、`FR_LLM_MODEL`、`OPENAI_API_KEY`，不记录其值。
-- [ ] Docker 基于 `python:3.12-slim`，暴露 8000，启动 Uvicorn；`.dockerignore` 排除 `.git`、`.env`、`.venv`、缓存和 SQLite。
-- [ ] 运行 `docker build -t fr-harness:local .` 并提交 `feat: add cli and docker distribution`。
+- [x] 先写失败测试：`init` 创建数据库，标准输出不得含 `OPENAI_API_KEY`。
+- [x] 实现 `python -m fr_harness.cli init|serve|test`。
+- [x] `serve` 仅从环境读取 `FR_DATABASE_PATH`、`FR_LLM_BASE_URL`、`FR_LLM_MODEL`、`OPENAI_API_KEY`，不记录其值。
+- [x] Docker 基于 `python:3.12-slim`，暴露 8000，启动 Uvicorn；`.dockerignore` 排除 `.git`、`.env`、`.venv`、缓存和 SQLite。
+- [x] 运行 `docker build -t fr-harness:local .` 并提交 `feat: add cli and docker distribution`。
 
 ## Task 11：MockLLM 机制演示
 
