@@ -10,3 +10,10 @@ Chronological records of skills, context, subagent work, human interventions, an
 - GREEN evidence: `.venv\\Scripts\\python.exe -m pytest tests/test_models.py -v` passed with 2 tests.
 - Human intervention: user selected package path `src/fr_harness/` over the generic `src/safepatch/` example.
 - Lesson: project dependencies must be installed in the isolated virtual environment before a TDD red/green cycle can run.
+
+## 2026-07-16 — Task 2: SQLite task and audit persistence
+
+- Skills used: `executing-plans`, `test-driven-development`.
+- RED evidence: `.venv\\Scripts\\python.exe -m pytest tests/test_db.py -v` failed because `Database` was not exported by `fr_harness.db`.
+- GREEN evidence: the Task 2 tests passed (2 passed), then the full suite passed (4 passed).
+- Implementation: SQLite now initializes `tasks`, `events`, `approvals`, and `memory_entries`; the completed public methods are task creation/read and ordered JSON audit event persistence.

@@ -143,7 +143,7 @@ git add pyproject.toml src/fr_harness tests/test_models.py
 git commit -m "feat: add domain models"
 ```
 
-## Task 2: Add SQLite schema and audit repositories
+## Task 2: Add SQLite schema and audit repositories — completed; see `AGENT_LOG.md`
 
 **Files:**
 - Create: `src/fr_harness/db.py`
@@ -153,7 +153,7 @@ git commit -m "feat: add domain models"
 - Consumes: `TaskStatus` from `models.py`.
 - Produces: `Database.initialize()`, `create_task(goal, workspace)`, `get_task(task_id)`, `append_event(task_id, kind, payload)`, `list_events(task_id)`.
 
-- [ ] **Step 1: Write the failing persistence test**
+- [x] **Step 1: Write the failing persistence test**
 
 ```python
 from fr_harness.db import Database
@@ -165,21 +165,21 @@ def test_create_task_persists_a_created_task(tmp_path) -> None:
     assert db.get_task(task.id).status == "created"
 ```
 
-- [ ] **Step 2: Verify the test fails**
+- [x] **Step 2: Verify the test fails**
 
 Run: `python -m pytest tests/test_db.py::test_create_task_persists_a_created_task -v`  
 Expected: FAIL with `ModuleNotFoundError: No module named 'fr_harness.db'`.
 
-- [ ] **Step 3: Implement the minimal SQLite repository**
+- [x] **Step 3: Implement the minimal SQLite repository**
 
 Implement a `Database` class using one `sqlite3.connect(..., check_same_thread=False)` per operation. `initialize()` must create `tasks`, `events`, `approvals`, and `memory_entries` tables. Store task ids as UUID strings; `tasks` must include `id`, `goal`, `workspace`, `status`, `iteration`, and `created_at`. `append_event` serializes a JSON payload and `list_events` returns entries ordered by id ascending.
 
-- [ ] **Step 4: Verify repository behavior**
+- [x] **Step 4: Verify repository behavior**
 
 Run: `python -m pytest tests/test_db.py -v`  
 Expected: PASS; include assertions that appended events retain their task id and JSON payload.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/fr_harness/db.py tests/test_db.py
