@@ -170,5 +170,15 @@ Chronological records of skills, context, subagent work, human interventions, an
 - PR head `94ae350` 的 pull_request run 29564094708 已完成。
 - `unit-test` success（19s），`docker-build` success（20s），`publish-image` 按分支条件 skipped。
 - Task 10 的 GOAL 已在合并前创建；下一步为最终 PR 门禁、合并和 GHCR 匿名验证。
+
+### 2026-07-17：Task 10 公共镜像
+
+- PR #1 最终 head `29964b2` 通过两轮 GitHub Actions，并以 expected head SHA 合并为 `2579ff9`。
+- main run 29564500446：`unit-test`、`docker-build`、`publish-image` 全部 success。
+- 公共镜像：`ghcr.io/rippleorapple/fr-harness:latest`；main SHA tag：`sha-2579ff9`。
+- 全新空 `DOCKER_CONFIG` 中匿名 manifest inspect 与真实 pull 均成功；manifest digest 为 `sha256:ba7b5dd3022bcca178e6749468cdbcad43e80b25f636a0103851adfece4c7012`。
+- 公共镜像冷启动 HTTP 200，随机测试凭据在日志中 0 match，认证目录前后文件数均为 0。
+- 本地 `main` 有三笔重写前的独立提交，因此未强制 reset；最终证据从 `origin/main` 的 `delivery-evidence` 分支提交。
+- 最终本地门禁：91 passed；三项 MockLLM 机制演示 PASS；Git 历史敏感信息扫描 0 match。
 - Review artifacts: `temp/reviews/spec-compliance-review.md`、`temp/reviews/code-quality-review.md`。
 - 真实性：这是后补评审，不能倒签为 Task 1–12 当时已经执行的逐 task 双评审。

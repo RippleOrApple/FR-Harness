@@ -211,6 +211,17 @@ approval one-time use: PASS
 docker build -t fr-harness:local .
 ```
 
+公共 GHCR 镜像可匿名拉取：
+
+```bash
+docker pull ghcr.io/rippleorapple/fr-harness:latest
+```
+
+镜像包页面：https://github.com/RippleOrApple/FR-Harness/pkgs/container/fr-harness
+
+2026-07-17 的交付验证使用全新空 `DOCKER_CONFIG` 完成真实 pull，得到 manifest digest
+`sha256:ba7b5dd3022bcca178e6749468cdbcad43e80b25f636a0103851adfece4c7012`；随后冷启动返回 HTTP 200，容器日志中的注入测试凭据匹配为 0。该验证不复用本机 Docker 登录状态。
+
 准备 `.env` 后运行，并同时挂载持久化数据和待修复工作区：
 
 ```bash
