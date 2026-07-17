@@ -3,6 +3,7 @@ from enum import StrEnum
 from pathlib import Path
 from uuid import UUID, uuid4
 
+from fr_harness.config import ApprovalSettings
 from fr_harness.models import Action, ActionKind, ApprovalDecision
 
 
@@ -28,15 +29,22 @@ def resolve_workspace_path(root: Path, value: str) -> Path:
     return resolved_path
 
 
-def classify(action: Action, root: Path) -> GuardDecision:
+def classify(
+    action: Action,
+    root: Path,
+    policy: ApprovalSettings | None = None,
+) -> GuardDecision:
+    active_policy = policy or ApprovalSettings()
     if action.path is not None:
         try:
             target = resolve_workspace_path(root, action.path)
         except ValueError:
             return GuardDecision.BLOCKED
         if action.kind is ActionKind.WRITE_FILE:
-            return GuardDecision.REQUIRES_APPROVAL if target.exists() else GuardDecision.ALLOWED
-    if action.kind is ActionKind.RUN_PYTEST:
+            if target.exists() and active_policy.existing_file_write:
+                return GuardDecision.REQUIRES_APPROVAL
+            return GuardDecision.ALLOWED
+    if action.kind is ActionKind.RUN_PYTEST and active_policy.run_pytest:
         return GuardDecision.REQUIRES_APPROVAL
     return GuardDecision.ALLOWED
 

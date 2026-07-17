@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from fr_harness.agent import Agent
+from fr_harness.config import HarnessConfig
 from fr_harness.db import Database
 from fr_harness.llm import LLMClient
 from fr_harness.models import ApprovalDecision, TaskStatus
@@ -39,11 +40,16 @@ async def _urlencoded_form(request: Request) -> dict[str, str]:
     return {key: values[0] for key, values in parsed.items() if values}
 
 
-def create_app(database_path: Path, llm: LLMClient) -> FastAPI:
+def create_app(
+    database_path: Path,
+    llm: LLMClient,
+    *,
+    config: HarnessConfig | None = None,
+) -> FastAPI:
     app = FastAPI()
     database = Database(database_path)
     database.initialize()
-    agent = Agent(database, llm)
+    agent = Agent(database, llm, config=config)
     app.state.database = database
     app.state.agent = agent
 

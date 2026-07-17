@@ -2,6 +2,7 @@ from collections.abc import Callable
 from pathlib import Path
 from uuid import UUID
 
+from fr_harness.config import HarnessConfig
 from fr_harness.db import Database
 from fr_harness.guardrails import GuardDecision, classify
 from fr_harness.llm import LLMClient
@@ -34,17 +35,31 @@ class Agent:
         *,
         dispatcher: ToolDispatcher | None = None,
         memory: MemoryStore | None = None,
-        classifier: Classifier = classify,
-        max_iterations: int = 8,
+        classifier: Classifier | None = None,
+        max_iterations: int | None = None,
+        config: HarnessConfig | None = None,
     ) -> None:
-        if max_iterations < 1:
+        active_config = config or HarnessConfig()
+        active_max_iterations = (
+            active_config.agent.max_iterations
+            if max_iterations is None
+            else max_iterations
+        )
+        if active_max_iterations < 1:
             raise ValueError("max_iterations must be positive")
         self.database = database
         self.llm = llm
         self.dispatcher = dispatcher or ToolDispatcher()
         self.memory = memory or MemoryStore(database)
-        self.classifier = classifier
-        self.max_iterations = max_iterations
+        self.classifier = classifier or (
+            lambda action, root: classify(
+                action,
+                root,
+                active_config.approvals,
+            )
+        )
+        self.max_iterations = active_max_iterations
+        self.memory_limit = active_config.agent.memory_limit
 
     def run_once(self, task_id: UUID) -> Task:
         task = self.database.get_task(task_id)
@@ -58,7 +73,7 @@ class Agent:
         feedback = self._latest_feedback(events)
         context = build_context(
             task.goal,
-            self.memory.relevant(task.id),
+            self.memory.relevant(task.id, limit=self.memory_limit),
             feedback,
         )
         try:

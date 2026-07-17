@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md fr-harness.toml ./
 COPY src ./src
 
 RUN python -m pip install --no-cache-dir .

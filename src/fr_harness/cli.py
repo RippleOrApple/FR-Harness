@@ -8,7 +8,9 @@ from pathlib import Path
 
 import uvicorn
 from dotenv import load_dotenv
+from pydantic import ValidationError
 
+from fr_harness.config import load_config
 from fr_harness.credentials import (
     CredentialStore,
     CredentialStoreError,
@@ -144,12 +146,21 @@ def _serve(host: str, port: int, store: CredentialStore) -> int:
 
     database_path = _database_path()
     database_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        config = load_config()
+    except (OSError, ValueError, ValidationError):
+        print("agent configuration is invalid", file=sys.stderr)
+        return 2
     llm = OpenAICompatibleLLM(
         base_url=base_url,
         model=model,
         api_key=api_key,
     )
-    uvicorn.run(create_app(database_path, llm), host=host, port=port)
+    uvicorn.run(
+        create_app(database_path, llm, config=config),
+        host=host,
+        port=port,
+    )
     return 0
 
 
