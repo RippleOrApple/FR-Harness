@@ -66,3 +66,28 @@ def test_spec_explains_stack_distribution_and_acceptance_evidence() -> None:
         "demo/mock_repair_demo.py",
     ):
         assert evidence in spec
+
+
+def test_spec_process_records_three_iterations_and_honest_evidence() -> None:
+    process = (ROOT / "SPEC_PROCESS.md").read_text(encoding="utf-8")
+
+    assert len(re.findall(r"(?m)^## 迭代 \d+：", process)) >= 3
+    for required in (
+        "AI 建议",
+        "用户判断",
+        "修订",
+        "证据",
+        "回顾性整理",
+        "不伪造",
+        "冷启动验证",
+        "冷启动复验",
+    ):
+        assert required in process
+
+
+def test_spec_process_reflects_on_brainstorming_strengths_and_limits() -> None:
+    process = (ROOT / "SPEC_PROCESS.md").read_text(encoding="utf-8")
+
+    assert "brainstorming 做得好的地方" in process
+    assert "brainstorming 让人不满的地方" in process
+    assert "人的最终判断" in process
