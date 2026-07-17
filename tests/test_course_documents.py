@@ -91,3 +91,37 @@ def test_spec_process_reflects_on_brainstorming_strengths_and_limits() -> None:
     assert "brainstorming 做得好的地方" in process
     assert "brainstorming 让人不满的地方" in process
     assert "人的最终判断" in process
+
+
+def test_documented_modules_and_commands_match_repository() -> None:
+    spec = (ROOT / "SPEC.md").read_text(encoding="utf-8")
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "`actions`" not in spec
+    assert "`audit`" not in spec
+    assert "credentials.py" in readme
+    assert "config.py" in readme
+    assert "credentials.py" in plan
+    assert "config.py" in plan
+    for command in (
+        "credential set",
+        "credential status",
+        "credential update",
+        "credential clear",
+    ):
+        assert command in readme
+
+
+def test_readme_explains_credential_and_rule_precedence() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    for required in (
+        "环境变量优先",
+        "system keyring",
+        "fr-harness.toml",
+        "Windows Credential Manager",
+        "Docker",
+        "平台 Secret",
+    ):
+        assert required.lower() in readme.lower()

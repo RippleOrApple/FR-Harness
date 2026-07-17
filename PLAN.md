@@ -24,6 +24,8 @@
 | 路径 | 职责 |
 | --- | --- |
 | `src/fr_harness/models.py` | 枚举、Pydantic 领域模型 |
+| `src/fr_harness/config.py` | TOML 与环境覆盖的声明式 Agent 规则 |
+| `src/fr_harness/credentials.py` | system keyring 凭据生命周期 |
 | `src/fr_harness/db.py` | SQLite 初始化与仓储接口 |
 | `src/fr_harness/llm.py` | LLM 协议、MockLLM、OpenAI 兼容适配器 |
 | `src/fr_harness/guardrails.py` | 路径限制、危险动作分类、审批状态机 |
@@ -32,7 +34,8 @@
 | `src/fr_harness/memory.py` | 项目约定、失败尝试与上下文构建 |
 | `src/fr_harness/agent.py` | 自建 Agent 主循环、停止策略 |
 | `src/fr_harness/web.py` | FastAPI API 与任务/详情/审批页面 |
-| `src/fr_harness/cli.py` | `init`、`serve`、`test` 命令 |
+| `src/fr_harness/cli.py` | `init`、`serve`、`test`、`credential` 命令 |
+| `fr-harness.toml` | 不含秘密的安全默认规则 |
 | `tests/` | 离线单元测试与 API 测试 |
 | `demo/mock_repair_demo.py` | 必交的确定性机制演示 |
 | `Dockerfile`、`.gitlab-ci.yml`、`README.md` | 分发、CI、使用说明 |
