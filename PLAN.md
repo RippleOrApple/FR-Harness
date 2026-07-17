@@ -123,6 +123,7 @@ class LLMClient(Protocol):
 
 ## Task 4：治理护栏与一次性审批状态机 — 已完成；见 `AGENT_LOG.md`
 
+**提交：** `975f767 feat: add guardrails and approval state machine`
 **文件：** 新建 `src/fr_harness/guardrails.py`、`tests/test_guardrails.py`
 **依赖：** Task 1
 
@@ -150,6 +151,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 5：受限工具与 pytest 反馈解析 — 已完成
 
+**提交：** `2ca4a0c feat: add constrained tools and pytest feedback`
 **文件：** 新建 `src/fr_harness/tools.py`、`src/fr_harness/feedback.py`、`tests/test_tools.py`、`tests/test_feedback.py`
 **依赖：** Task 1、Task 4
 
@@ -161,6 +163,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 6：记忆仓储与上下文构建 — 已完成
 
+**提交：** `7ce1a8c feat: add task memory context`
 **文件：** 新建 `src/fr_harness/memory.py`、`tests/test_memory.py`
 **依赖：** Task 1、Task 2
 
@@ -174,6 +177,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 7：自建 Agent 主循环 — 已完成
 
+**提交：** `c770f4a feat: add agent feedback control loop`
 **文件：** 新建 `src/fr_harness/agent.py`、`tests/test_agent.py`
 **依赖：** Task 2、3、4、5、6
 
@@ -186,6 +190,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 8：持久化审批与恢复执行 — 已完成
 
+**提交：** `8c154d0 feat: persist approval workflow`
 **文件：** 修改 `db.py`、`agent.py`；新建 `tests/test_approvals_integration.py`
 **依赖：** Task 2、4、5、7
 
@@ -196,6 +201,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 9：FastAPI 与三页极简 WebUI — 已完成
 
+**提交：** `4e6dc52 feat: add task and approval web ui`
 **文件：** 新建 `src/fr_harness/web.py`、`tests/test_web.py`
 **依赖：** Task 2、3、7、8
 
@@ -207,6 +213,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 10：CLI、安全配置与 Docker 分发 — 已完成
 
+**提交：** `5e38784 feat: add cli and docker distribution`
 **文件：** 修改/新建 `cli.py`、`Dockerfile`、`.dockerignore`、`.env.example`、`tests/test_cli.py`
 **依赖：** Task 2、3、9
 
@@ -218,6 +225,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 11：MockLLM 机制演示 — 已完成
 
+**提交：** `c1abe9b test: add deterministic mechanism demo`
 **文件：** 新建 `demo/mock_repair_demo.py`、`tests/test_demo.py`
 **依赖：** Task 7、8
 
@@ -228,6 +236,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 12：CI、README 与发布验证 — 已完成
 
+**提交：** `2d45d44 docs: add release and security guide`
 **文件：** 修改 `.gitlab-ci.yml`、`README.md`；新建 `tests/test_readme_security.py`
 **依赖：** Task 10、11
 

@@ -125,3 +125,19 @@ Chronological records of skills, context, subagent work, human interventions, an
 - Documentation: UTF-8 README now covers architecture, install, configuration, CLI, WebUI, Mock demo, Docker, CI, key handling, `.env` plaintext risk, workspace boundaries, limitations and structure. Personal reflection remains explicitly student-authored.
 - Release evidence: the final `fr-harness:local` image built successfully; a uniquely named container started with an offline placeholder endpoint, remained `running`, returned HTTP 200 from a random localhost port, did not include the test key in logs, and was removed after verification.
 - Security evidence: tracked-file scan found no `sk-` credential-shaped value with 20 or more key characters; the only remaining untracked file is the user's pre-existing `A任务完成指南.md`.
+
+## 2026-07-17 — 前十项补救设计与 Tasks R1–R6
+
+- Skills used: `brainstorming`, `writing-plans`, `using-git-worktrees`, `executing-plans`, `planning-with-files`, `test-driven-development`.
+- 关键 prompt / context：用户要求“先把前面的十项你能做的都做了”，允许需要时使用 OpenCode，并授权完成后 push 远程；既有约束是每个 task 先写 `GOAL.md`，新过程 Markdown 放到 `temp/`。
+- 人工判断：用户选择 `keyring + 环境变量回退`，批准“评分项驱动补齐”而不是最小补丁或整体重构，并再次确认落盘设计。
+- Worktree decision: `using-git-worktrees` 检测到当前是普通 checkout。用户此前明确要求把工作放在 FR-Harness 当前功能分支而不是 `.worktrees`，因此继续使用 `setup-scaffold`；基线为 49 passed。
+- Commits:
+  - `a661164`：批准的补救设计与十项实施计划。
+  - `194cd09`：安全 keyring 生命周期；RED 为模块缺失/15 个行为失败，GREEN 为 64 passed。
+  - `d486bcd`：完整十项 SPEC、六个用户故事、NFR 和威胁模型；GREEN 为 67 passed。
+  - `c7fd41c`：四轮规格形成过程、冷启动差异和 brainstorming 反思；GREEN 为 69 passed。
+  - `c2731f8`：声明式 TOML 配置、运行时注入和空模块清理；GREEN 为 80 passed。
+  - `124221a`：README/PLAN 与凭据、配置、模块和命令同步；GREEN 为 82 passed。
+- 偏差与诚实边界：早期 Task 1–12 没有逐 task 使用新鲜 subagent，也没有每个 task 都完成“规格检查 → 代码质量检查”的双阶段评审。当前计划中的 OpenCode 两次检查属于后补评审，不能倒签成当时已经发生的过程。
+- Review status: OpenCode 规格合规和代码质量后补评审尚未运行；只有实际运行并保存输出后才会标为完成。

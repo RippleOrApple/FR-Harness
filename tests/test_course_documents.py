@@ -125,3 +125,45 @@ def test_readme_explains_credential_and_rule_precedence() -> None:
         "平台 Secret",
     ):
         assert required.lower() in readme.lower()
+
+
+EXPECTED_TASK_HASHES = {
+    1: "915b27b",
+    2: "82b1436",
+    3: "1b41219",
+    4: "975f767",
+    5: "2ca4a0c",
+    6: "7ce1a8c",
+    7: "c770f4a",
+    8: "8c154d0",
+    9: "4e6dc52",
+    10: "5e38784",
+    11: "c1abe9b",
+    12: "2d45d44",
+}
+
+
+def test_plan_records_real_hash_for_every_completed_task() -> None:
+    plan = (ROOT / "PLAN.md").read_text(encoding="utf-8")
+
+    for task, commit_hash in EXPECTED_TASK_HASHES.items():
+        task_section = re.search(
+            rf"(?ms)^## Task {task}：.*?(?=^## Task \d+：|\Z)",
+            plan,
+        )
+        assert task_section is not None
+        assert commit_hash in task_section.group(0)
+
+
+def test_agent_log_names_context_human_judgment_and_honest_deviation() -> None:
+    log = (ROOT / "AGENT_LOG.md").read_text(encoding="utf-8")
+
+    for required in (
+        "关键 prompt / context",
+        "人工判断",
+        "偏差",
+        "OpenCode",
+        "后补评审",
+        "不能倒签",
+    ):
+        assert required in log
