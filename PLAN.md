@@ -181,15 +181,15 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] 只有“pytest 通过后收到 `complete`”才可成功；超过 8 轮或连续两次相同动作则失败。
 - [x] 覆盖最大轮数、重复动作、路径阻断、失败测试后不能完成等测试；提交 `feat: add agent feedback control loop`。
 
-## Task 8：持久化审批与恢复执行
+## Task 8：持久化审批与恢复执行 — 已完成
 
 **文件：** 修改 `db.py`、`agent.py`；新建 `tests/test_approvals_integration.py`
 **依赖：** Task 2、4、5、7
 
-- [ ] 先写失败测试：覆盖已有文件在批准前不得写入；批准后仅执行一次。
-- [ ] 实现 `create_approval()`、`decide_approval()`、`get_pending_approval()`。
-- [ ] `resume_after_approval()` 必须原子消费已批准动作，执行并写审计；拒绝则任务 `cancelled`。
-- [ ] 测试拒绝、一次性消费、SQLite 重启后仍能读取待审批项；提交 `feat: persist approval workflow`。
+- [x] 先写失败测试：覆盖已有文件在批准前不得写入；批准后仅执行一次。
+- [x] 实现 `create_approval()`、`decide_approval()`、`get_pending_approval()`。
+- [x] `resume_after_approval()` 必须原子消费已批准动作，执行并写审计；拒绝则任务 `cancelled`。
+- [x] 测试拒绝、一次性消费、SQLite 重启后仍能读取待审批项；提交 `feat: persist approval workflow`。
 
 ## Task 9：FastAPI 与三页极简 WebUI
 

@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -19,7 +20,15 @@ class ToolDispatcher:
             target = self._target(root, action)
             if action.content is None:
                 raise ValueError("write_file requires content")
+            previous_mtime = target.stat().st_mtime if target.exists() else None
             target.write_text(action.content, encoding="utf-8")
+            if previous_mtime is not None and target.suffix == ".py":
+                current_stat = target.stat()
+                if int(current_stat.st_mtime) <= int(previous_mtime):
+                    os.utime(
+                        target,
+                        (current_stat.st_atime, float(int(previous_mtime) + 1)),
+                    )
             return ToolResult(ok=True, output=f"wrote {action.path}")
 
         if action.kind is ActionKind.RUN_PYTEST:

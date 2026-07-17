@@ -78,3 +78,13 @@ Chronological records of skills, context, subagent work, human interventions, an
 - GREEN evidence: Task 7 tests passed (6 passed), then the full suite passed (30 passed).
 - Implementation: the handwritten loop persists state/iterations, builds context from durable events and memory, records redacted audit events, pauses dangerous actions, fails blocked/repeated/over-budget behavior, and only succeeds when `complete` follows passing pytest feedback.
 - Boundary: Task 7 records an in-process approval request marker only; SQLite action persistence and post-decision resume are intentionally deferred to Task 8.
+
+## 2026-07-17 — Task 8：持久化审批与恢复执行
+
+- Skills used: `planning-with-files`, `test-driven-development`, `systematic-debugging`.
+- Process files: `temp/task-08/GOAL.md`, `task_plan.md`, `findings.md`, `progress.md`.
+- RED evidence: all 4 approval integration tests failed because the Database approval repository was absent.
+- GREEN evidence: Task 8 approval tests passed (4 passed); regression selection passed (6 passed); the full suite passed (35 passed).
+- Implementation: approval actions and decisions survive SQLite restart; `approved → consumed` is a conditional atomic update; resume executes only after obtaining that transition; rejected actions cancel without side effects; all lifecycle transitions are audited.
+- Security: approval JSON is redacted before persistence via the shared `security.py` helper.
+- Debugging lesson: the full suite exposed same-second, same-size Python rewrites reusing stale `.pyc`; evidence from audit outputs confirmed the second pytest still imported `wrong`. A red regression test now requires Python rewrites to advance the integer mtime cache key, restoring deterministic feedback repair.

@@ -1,14 +1,20 @@
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
 from uuid import UUID
-from uuid import uuid4
 
 from fr_harness.db import Database
 from fr_harness.guardrails import GuardDecision, classify
 from fr_harness.llm import LLMClient
-from fr_harness.memory import MemoryStore, build_context, redact_secrets
-from fr_harness.models import Action, ActionKind, Feedback, Task, TaskStatus
+from fr_harness.memory import MemoryStore, build_context
+from fr_harness.models import (
+    Action,
+    ActionKind,
+    ApprovalDecision,
+    Feedback,
+    Task,
+    TaskStatus,
+)
+from fr_harness.security import redact_secrets, redact_value
 from fr_harness.tools import ToolDispatcher
 
 
@@ -81,17 +87,9 @@ class Agent:
             decision is GuardDecision.REQUIRES_APPROVAL
             or action.kind is ActionKind.REQUEST_APPROVAL
         ):
+            self.database.create_approval(task.id, action)
             task.status = TaskStatus.PENDING_APPROVAL
             self.database.update_task(task)
-            self.database.append_event(
-                task.id,
-                "approval_requested",
-                {
-                    "approval_id": str(uuid4()),
-                    "action": action_payload,
-                    "reason": redact_secrets(action.reason or "dangerous action"),
-                },
-            )
             return task
 
         if action.kind is ActionKind.COMPLETE:
@@ -106,6 +104,45 @@ class Agent:
             )
             return task
 
+        return self._execute_tool(task, action)
+
+    def run_until_stopped(self, task_id: UUID) -> Task:
+        while True:
+            task = self.run_once(task_id)
+            if task.status in TERMINAL_STATUSES or task.status is TaskStatus.PENDING_APPROVAL:
+                return task
+
+    def resume_after_approval(self, task_id: UUID) -> Task:
+        task = self.database.get_task(task_id)
+        if task.status is not TaskStatus.PENDING_APPROVAL:
+            return task
+        approval = self.database.get_latest_approval(task.id)
+        if approval is None or approval.decision is ApprovalDecision.PENDING:
+            return task
+        if approval.decision is ApprovalDecision.REJECTED:
+            task.status = TaskStatus.CANCELLED
+            self.database.update_task(task)
+            self.database.append_event(
+                task.id,
+                "cancelled",
+                {"reason": "approval rejected", "approval_id": str(approval.id)},
+            )
+            return task
+        if not self.database.consume_approval(approval.id):
+            return self.database.get_task(task.id)
+
+        task.status = TaskStatus.RUNNING
+        self.database.update_task(task)
+        if approval.action.kind is ActionKind.REQUEST_APPROVAL:
+            self.database.append_event(
+                task.id,
+                "approval_acknowledged",
+                {"approval_id": str(approval.id)},
+            )
+            return task
+        return self._execute_tool(task, approval.action)
+
+    def _execute_tool(self, task: Task, action: Action) -> Task:
         try:
             result = self.dispatcher.execute(action, task.workspace)
         except Exception as error:
@@ -135,12 +172,6 @@ class Agent:
             )
             self.memory.add(task.id, "pytest_feedback", safe_feedback.summary)
         return self.database.get_task(task.id)
-
-    def run_until_stopped(self, task_id: UUID) -> Task:
-        while True:
-            task = self.run_once(task_id)
-            if task.status in TERMINAL_STATUSES or task.status is TaskStatus.PENDING_APPROVAL:
-                return task
 
     def _fail(
         self,
@@ -175,11 +206,8 @@ class Agent:
         return Feedback.model_validate(payload) if payload is not None else None
 
     @classmethod
-    def _safe_payload(cls, value: Any) -> Any:
-        if isinstance(value, str):
-            return redact_secrets(value)
-        if isinstance(value, dict):
-            return {str(key): cls._safe_payload(item) for key, item in value.items()}
-        if isinstance(value, list):
-            return [cls._safe_payload(item) for item in value]
-        return value
+    def _safe_payload(cls, value: object) -> dict[str, object]:
+        redacted = redact_value(value)
+        if not isinstance(redacted, dict):
+            raise TypeError("action payload must be a mapping")
+        return redacted

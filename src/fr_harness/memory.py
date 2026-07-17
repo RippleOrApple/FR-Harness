@@ -1,20 +1,9 @@
-import re
 import sqlite3
 from uuid import UUID
 
 from fr_harness.db import Database
 from fr_harness.models import Feedback
-
-
-_SECRET_ASSIGNMENT = re.compile(
-    r"(?i)\b([A-Z0-9_]*(?:API[_-]?KEY|TOKEN|SECRET|PASSWORD)[A-Z0-9_]*\s*[:=]\s*)([^\s,;]+)"
-)
-_OPENAI_STYLE_KEY = re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b")
-
-
-def redact_secrets(value: str) -> str:
-    redacted = _SECRET_ASSIGNMENT.sub(r"\1[REDACTED]", value)
-    return _OPENAI_STYLE_KEY.sub("[REDACTED]", redacted)
+from fr_harness.security import redact_secrets
 
 
 class MemoryStore:
