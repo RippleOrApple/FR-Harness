@@ -133,12 +133,12 @@ Chronological records of skills, context, subagent work, human interventions, an
 - 人工判断：用户选择 `keyring + 环境变量回退`，批准“评分项驱动补齐”而不是最小补丁或整体重构，并再次确认落盘设计。
 - Worktree decision: `using-git-worktrees` 检测到当前是普通 checkout。用户此前明确要求把工作放在 FR-Harness 当前功能分支而不是 `.worktrees`，因此继续使用 `setup-scaffold`；基线为 49 passed。
 - Commits:
-  - `a661164`：批准的补救设计与十项实施计划。
-  - `194cd09`：安全 keyring 生命周期；RED 为模块缺失/15 个行为失败，GREEN 为 64 passed。
-  - `d486bcd`：完整十项 SPEC、六个用户故事、NFR 和威胁模型；GREEN 为 67 passed。
-  - `c7fd41c`：四轮规格形成过程、冷启动差异和 brainstorming 反思；GREEN 为 69 passed。
-  - `c2731f8`：声明式 TOML 配置、运行时注入和空模块清理；GREEN 为 80 passed。
-  - `124221a`：README/PLAN 与凭据、配置、模块和命令同步；GREEN 为 82 passed。
+  - `3429b0b`：批准的补救设计与十项实施计划。
+  - `cce5a9d`：安全 keyring 生命周期；RED 为模块缺失/15 个行为失败，GREEN 为 64 passed。
+  - `a626aa9`：完整十项 SPEC、六个用户故事、NFR 和威胁模型；GREEN 为 67 passed。
+  - `d97223a`：四轮规格形成过程、冷启动差异和 brainstorming 反思；GREEN 为 69 passed。
+  - `74971af`：声明式 TOML 配置、运行时注入和空模块清理；GREEN 为 80 passed。
+  - `24c80d9`：README/PLAN 与凭据、配置、模块和命令同步；GREEN 为 82 passed。
 - 偏差与诚实边界：早期 Task 1–12 没有逐 task 使用新鲜 subagent，也没有每个 task 都完成“规格检查 → 代码质量检查”的双阶段评审。当前计划中的 OpenCode 两次检查属于后补评审，不能倒签成当时已经发生的过程。
 - Review status: OpenCode 规格合规和代码质量后补评审尚未运行；只有实际运行并保存输出后才会标为完成。
 
@@ -149,6 +149,13 @@ Chronological records of skills, context, subagent work, human interventions, an
 - 代码质量 review：另一个全新 `--pure` 会话报告 0 Critical、2 Major、7 Minor，并判定可进入 PR。
 - 人工判断：接受配置文件缺失错误分类、脱敏后重复动作假阳性和 Web approve 测试；不接受 WAL/连接池作为首版 Major，因为当前架构明确单进程单任务、连接短生命周期且 CAS 条件更新保持一次消费。
 - RED evidence：冷启动 diff 测试 1 failed；代码 review 三项测试为 2 failed、1 passed。
-- GREEN evidence：真实 `57fc02f` diff 已加入过程文档；原始动作改用 SHA-256 指纹比较且审计仍只存脱敏内容；配置缺失错误不输出路径；approve 路由有直接覆盖。目标测试通过，完整测试 91 passed。
+- GREEN evidence：真实 `d43ac58` diff 已加入过程文档；原始动作改用 SHA-256 指纹比较且审计仍只存脱敏内容；配置缺失错误不输出路径；approve 路由有直接覆盖。目标测试通过，完整测试 91 passed。
+
+### 2026-07-17：推送前隐私修复
+
+- 首次 push 被 GitHub GH007 拒绝：`origin/main` 之后的 31 个本地提交使用了受保护的学校邮箱。
+- 保留 `origin/main` 不变，仅将尚未推送的 `setup-scaffold` 历史作者与提交者改为 GitHub noreply 身份。
+- 历史重写导致提交哈希变化；`PLAN.md`、`SPEC_PROCESS.md`、测试和过程证据已同步到新哈希。
+- 未关闭 GitHub 邮箱隐私保护，未公开学校邮箱；未跟踪的 `A任务完成指南.md` 未被改动。
 - Review artifacts: `temp/reviews/spec-compliance-review.md`、`temp/reviews/code-quality-review.md`。
 - 真实性：这是后补评审，不能倒签为 Task 1–12 当时已经执行的逐 task 双评审。

@@ -69,7 +69,7 @@
 
 ## Task 1：包基础与领域模型 — 已完成
 
-**提交：** `915b27b feat: add domain models`
+**提交：** `2adfbea feat: add domain models`
 **文件：** `pyproject.toml`、`src/fr_harness/models.py`、`tests/test_models.py`
 
 - [x] 先编写 `Action` 写文件动作与 `TaskStatus.PENDING_APPROVAL` 的失败测试。
@@ -89,7 +89,7 @@ class Action(BaseModel):
 
 ## Task 2：SQLite 任务与审计持久化 — 已完成
 
-**提交：** `82b1436 feat: persist tasks and audit events`
+**提交：** `c218571 feat: persist tasks and audit events`
 **文件：** `src/fr_harness/db.py`、`tests/test_db.py`
 
 - [x] 先写任务创建/读取和审计事件按顺序保存的失败测试。
@@ -108,7 +108,7 @@ Database.list_events(task_id: UUID) -> list[dict[str, object]]
 
 ## Task 3：可注入 LLM 接口 — 已完成
 
-**提交：** `1b41219 feat: add injectable llm clients`
+**提交：** `b380d11 feat: add injectable llm clients`
 **文件：** `src/fr_harness/llm.py`、`tests/test_llm.py`
 
 - [x] 先写 MockLLM 动作队列和 OpenAI 兼容响应解析的失败测试。
@@ -125,7 +125,7 @@ class LLMClient(Protocol):
 
 ## Task 4：治理护栏与一次性审批状态机 — 已完成；见 `AGENT_LOG.md`
 
-**提交：** `975f767 feat: add guardrails and approval state machine`
+**提交：** `2f7a2dc feat: add guardrails and approval state machine`
 **文件：** 新建 `src/fr_harness/guardrails.py`、`tests/test_guardrails.py`
 **依赖：** Task 1
 
@@ -153,7 +153,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 5：受限工具与 pytest 反馈解析 — 已完成
 
-**提交：** `2ca4a0c feat: add constrained tools and pytest feedback`
+**提交：** `c0b197c feat: add constrained tools and pytest feedback`
 **文件：** 新建 `src/fr_harness/tools.py`、`src/fr_harness/feedback.py`、`tests/test_tools.py`、`tests/test_feedback.py`
 **依赖：** Task 1、Task 4
 
@@ -165,7 +165,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 6：记忆仓储与上下文构建 — 已完成
 
-**提交：** `7ce1a8c feat: add task memory context`
+**提交：** `0a4b70f feat: add task memory context`
 **文件：** 新建 `src/fr_harness/memory.py`、`tests/test_memory.py`
 **依赖：** Task 1、Task 2
 
@@ -179,7 +179,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 7：自建 Agent 主循环 — 已完成
 
-**提交：** `c770f4a feat: add agent feedback control loop`
+**提交：** `cb4d677 feat: add agent feedback control loop`
 **文件：** 新建 `src/fr_harness/agent.py`、`tests/test_agent.py`
 **依赖：** Task 2、3、4、5、6
 
@@ -192,7 +192,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 8：持久化审批与恢复执行 — 已完成
 
-**提交：** `8c154d0 feat: persist approval workflow`
+**提交：** `1b50c28 feat: persist approval workflow`
 **文件：** 修改 `db.py`、`agent.py`；新建 `tests/test_approvals_integration.py`
 **依赖：** Task 2、4、5、7
 
@@ -203,7 +203,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 9：FastAPI 与三页极简 WebUI — 已完成
 
-**提交：** `4e6dc52 feat: add task and approval web ui`
+**提交：** `6c0e19a feat: add task and approval web ui`
 **文件：** 新建 `src/fr_harness/web.py`、`tests/test_web.py`
 **依赖：** Task 2、3、7、8
 
@@ -215,7 +215,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 10：CLI、安全配置与 Docker 分发 — 已完成
 
-**提交：** `5e38784 feat: add cli and docker distribution`
+**提交：** `12caf2d feat: add cli and docker distribution`
 **文件：** 修改/新建 `cli.py`、`Dockerfile`、`.dockerignore`、`.env.example`、`tests/test_cli.py`
 **依赖：** Task 2、3、9
 
@@ -227,7 +227,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 11：MockLLM 机制演示 — 已完成
 
-**提交：** `c1abe9b test: add deterministic mechanism demo`
+**提交：** `9c1ef29 test: add deterministic mechanism demo`
 **文件：** 新建 `demo/mock_repair_demo.py`、`tests/test_demo.py`
 **依赖：** Task 7、8
 
@@ -238,7 +238,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 ## Task 12：CI、README 与发布验证 — 已完成
 
-**提交：** `2d45d44 docs: add release and security guide`
+**提交：** `f04e3c5 docs: add release and security guide`
 **文件：** 修改 `.gitlab-ci.yml`、`README.md`；新建 `tests/test_readme_security.py`
 **依赖：** Task 10、11
 

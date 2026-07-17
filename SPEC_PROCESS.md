@@ -16,7 +16,7 @@
 - **AI 建议：** 比较轻量单进程、事件队列和多 Agent 三类架构，把治理、反馈和记忆做成可离线测试的代码，而不是把课程重点放在模型能力或提示词。
 - **用户判断：** 选择 A 类 Coding Agent Harness，并批准轻量单进程方向及治理作为主要贡献。早期连续的数字选择和“可以/符合”可以证明发生过取舍和批准，但当前记录不能可靠恢复每个数字对应的完整选项文本。
 - **修订：** SPEC 将首版范围收敛为 Python、pytest、FastAPI、SQLite、MockLLM、OpenAI 兼容适配器和 Docker；明确不做多 Agent、队列和语义检索。
-- **证据：** `SPEC.md` 的范围、已比较方案；Git 中 `5d08b51`、`295430a` 等早期脚手架提交。
+- **证据：** `SPEC.md` 的范围、已比较方案；Git 中 `e2324ae`、`560360a` 等早期脚手架提交。
 
 这一轮让“做一个 Agent”变成“实现决策、工具、治理、反馈、记忆与配置六个 Harness 维度”，避免项目退化为 API 包装器。
 
@@ -27,7 +27,7 @@
 - **AI 建议：** 早期脚手架使用过通用目录和独立 worktree/docs 组织。
 - **用户判断：** 用户纠正项目名为 `FR-Harness`，要求项目结构遵循 A 任务完成指南；随后明确提出直接使用新分支并把内容放到 `FR-Harness`，`SPEC.md` 和 `PLAN.md` 必须是实质内容，`docs/` 可以删除；用户还确认采用 `src/fr_harness/`。
 - **修订：** 正式 SPEC/PLAN 移到仓库根目录，包路径固定为 `src/fr_harness/`，实现留在 `setup-scaffold` 功能分支；过程文件按后续要求放入 `temp/`。
-- **证据：** Git 提交 `6946fa6 docs: move specification and plan to repository root`、`0961ee1 docs: translate implementation plan to Chinese`，以及当前根目录结构。
+- **证据：** Git 提交 `1bbf20b docs: move specification and plan to repository root`、`b58746f docs: translate implementation plan to Chinese`，以及当前根目录结构。
 
 这一轮体现人的最终判断：工具提出的通用 Superpowers 目录习惯不能覆盖课程交付结构和用户明确偏好。
 
@@ -38,7 +38,7 @@
 - **AI 建议：** 用户指出 PLAN 没有明确列出“阶段 2：陌生 Agent 冷启动验证”后，主 Agent 把它加入实施前关卡，并使用与 Codex 不同的 OpenCode CLI。
 - **用户判断：** 用户允许在命令行使用 OpenCode 补做，要求继续；冷启动只给 SPEC/PLAN，遇到不确定处必须暂停。
 - **修订：** 第一次验证暴露 Action/Approval/Memory/Chat 接口不清，SPEC §5.1 和 PLAN 对 Task 4/6 的契约被补齐；第二个全新会话复验后才继续 Task 4。
-- **证据：** Git 提交 `e930464`、`57fc02f`、`b901129`；下方两次 OpenCode 记录。
+- **证据：** Git 提交 `b8a8237`、`d43ac58`、`3dbb8d8`；下方两次 OpenCode 记录。
 
 ### 冷启动验证（第一次）— 2026-07-16
 
@@ -59,7 +59,7 @@
 | Memory schema/API | 未定义 | 固定表字段和 `MemoryStore(Database)` |
 | Chat 格式 | 只有大致顺序 | 固定 role 与安全/记忆/反馈/目标顺序 |
 
-Git 提交 `57fc02f` 保存了当时的实际修订。以下是从该 commit 提取的关键 diff，而不是事后重写的示意文本：
+Git 提交 `d43ac58` 保存了当时的实际修订。以下是从该 commit 提取的关键 diff，而不是事后重写的示意文本：
 
 ```diff
 +## 5.1 核心数据模型与接口约定
@@ -89,7 +89,7 @@ Git 提交 `57fc02f` 保存了当时的实际修订。以下是从该 commit 提
 - **AI 建议：** 对审计发现提出三种方案：最小补丁、评分项驱动补齐、整体重构；推荐每个评分项对应实现、测试、文档和远程证据。凭据比较 `keyring + 环境变量回退`、加密本地文件和 Windows-only Credential Manager。
 - **用户判断：** 用户批准 `keyring + 环境变量回退`，随后批准评分项驱动设计，并确认落盘的 `temp/remediation-design.md`。
 - **修订：** 形成十项补救：凭据生命周期、完整 SPEC、三轮过程、声明式配置、文档对齐、真实 hash/日志、GitHub Actions、OpenCode 双评审、绿色 CI/合并、公共 GHCR 镜像。
-- **证据：** 当前会话的三次明确“可以/批准/确认”；提交 `a661164 docs: add remediation design and plan`；`temp/2026-07-17-remediation-implementation-plan.md`。
+- **证据：** 当前会话的三次明确“可以/批准/确认”；提交 `3429b0b docs: add remediation design and plan`；`temp/2026-07-17-remediation-implementation-plan.md`。
 
 这一轮还确定了真实性边界：历史上没有逐 task subagent/two-stage review 的地方只能声明偏差；当前 OpenCode 评审是后补的独立评审，不能倒签为早期评审。
 

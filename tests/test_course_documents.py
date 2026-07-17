@@ -128,18 +128,18 @@ def test_readme_explains_credential_and_rule_precedence() -> None:
 
 
 EXPECTED_TASK_HASHES = {
-    1: "915b27b",
-    2: "82b1436",
-    3: "1b41219",
-    4: "975f767",
-    5: "2ca4a0c",
-    6: "7ce1a8c",
-    7: "c770f4a",
-    8: "8c154d0",
-    9: "4e6dc52",
-    10: "5e38784",
-    11: "c1abe9b",
-    12: "2d45d44",
+    1: "2adfbea",
+    2: "c218571",
+    3: "b380d11",
+    4: "2f7a2dc",
+    5: "c0b197c",
+    6: "0a4b70f",
+    7: "cb4d677",
+    8: "1b50c28",
+    9: "6c0e19a",
+    10: "12caf2d",
+    11: "9c1ef29",
+    12: "f04e3c5",
 }
 
 

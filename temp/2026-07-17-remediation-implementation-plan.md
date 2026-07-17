@@ -624,9 +624,9 @@ git commit -m "docs: align specification with implementation"
 
 ```python
 EXPECTED_TASK_HASHES = {
-    1: "915b27b", 2: "82b1436", 3: "1b41219", 4: "975f767",
-    5: "2ca4a0c", 6: "7ce1a8c", 7: "c770f4a", 8: "8c154d0",
-    9: "4e6dc52", 10: "5e38784", 11: "c1abe9b", 12: "2d45d44",
+    1: "2adfbea", 2: "c218571", 3: "b380d11", 4: "2f7a2dc",
+    5: "c0b197c", 6: "0a4b70f", 7: "cb4d677", 8: "1b50c28",
+    9: "6c0e19a", 10: "12caf2d", 11: "9c1ef29", 12: "f04e3c5",
 }
 
 def test_plan_records_real_hash_for_every_completed_task() -> None:
@@ -648,10 +648,10 @@ Expected: FAIL，Task 4–12 尚无 hash。
 PLAN 使用以下已验证 hash：
 
 ```text
-Task 1  915b27b    Task 2  82b1436    Task 3  1b41219
-Task 4  975f767    Task 5  2ca4a0c    Task 6  7ce1a8c
-Task 7  c770f4a    Task 8  8c154d0    Task 9  4e6dc52
-Task 10 5e38784    Task 11 c1abe9b    Task 12 2d45d44
+Task 1  2adfbea    Task 2  c218571    Task 3  b380d11
+Task 4  2f7a2dc    Task 5  c0b197c    Task 6  0a4b70f
+Task 7  cb4d677    Task 8  1b50c28    Task 9  6c0e19a
+Task 10 12caf2d    Task 11 9c1ef29    Task 12 f04e3c5
 ```
 
 AGENT_LOG 增加本轮时间线：用户要求十项补救、`keyring` 选择、三方案比较、设计批准、writing-plans/GOAL/TDD、每个新提交的实际 hash。使用 `git rev-parse --short HEAD` 获取新提交 hash，不预填不存在的值。
