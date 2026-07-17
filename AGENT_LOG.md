@@ -2,6 +2,11 @@
 
 Chronological records of skills, context, subagent work, human interventions, and lessons learned will be added here.
 
+## 2026-07-16 — Repository layout revision
+
+- Human intervention: move the active branch from the nested `.worktrees/` directory to the `FR-Harness` root and keep substantive documents in root `SPEC.md` and `PLAN.md`.
+- Decision: delete the `docs/` copies after migrating their full contents to root documents; preserve the existing implementation commits and do not modify the untracked `A任务完成指南.md` in the original checkout.
+
 ## 2026-07-16 — Task 1: package foundation and domain models
 
 - Skills used: `using-git-worktrees`, `executing-plans`, `test-driven-development`.
