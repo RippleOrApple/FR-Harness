@@ -169,17 +169,17 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 
 **实现约定：** `MemoryStore(Database)` 接收数据库实例；`memory_entries` 字段为 `id`、`task_id`、`category`、`content`、`created_at`。上下文为 OpenAI Chat `list[dict[str, str]]`，前三类消息 role 为 `system`，最后的用户目标 role 为 `user`。
 
-## Task 7：自建 Agent 主循环
+## Task 7：自建 Agent 主循环 — 已完成
 
 **文件：** 新建 `src/fr_harness/agent.py`、`tests/test_agent.py`
 **依赖：** Task 2、3、4、5、6
 
-- [ ] 先写端到端失败测试：MockLLM 先写错代码、pytest 失败、获得反馈后修复、pytest 通过、最后才 `complete`。
-- [ ] 实现 `Agent.run_once(task_id)` 和 `Agent.run_until_stopped(task_id)`。
-- [ ] 每轮：构建上下文 → LLM 返回 `Action` → 校验并分类 → 护栏/审批 → 工具执行 → 审计与记忆 → 反馈回灌。
-- [ ] 阻断动作使任务失败；危险动作创建审批并进入 `pending_approval`。
-- [ ] 只有“pytest 通过后收到 `complete`”才可成功；超过 8 轮或连续两次相同动作则失败。
-- [ ] 覆盖最大轮数、重复动作、路径阻断、失败测试后不能完成等测试；提交 `feat: add agent feedback control loop`。
+- [x] 先写端到端失败测试：MockLLM 先写错代码、pytest 失败、获得反馈后修复、pytest 通过、最后才 `complete`。
+- [x] 实现 `Agent.run_once(task_id)` 和 `Agent.run_until_stopped(task_id)`。
+- [x] 每轮：构建上下文 → LLM 返回 `Action` → 校验并分类 → 护栏/审批 → 工具执行 → 审计与记忆 → 反馈回灌。
+- [x] 阻断动作使任务失败；危险动作创建审批并进入 `pending_approval`。
+- [x] 只有“pytest 通过后收到 `complete`”才可成功；超过 8 轮或连续两次相同动作则失败。
+- [x] 覆盖最大轮数、重复动作、路径阻断、失败测试后不能完成等测试；提交 `feat: add agent feedback control loop`。
 
 ## Task 8：持久化审批与恢复执行
 

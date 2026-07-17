@@ -69,3 +69,12 @@ Chronological records of skills, context, subagent work, human interventions, an
 - RED evidence: after an import-only failure, minimal interfaces were introduced and all 3 behavior tests failed with `NotImplementedError`.
 - GREEN evidence: Task 6 tests passed (3 passed), then the full suite passed (24 passed).
 - Implementation: task memories are isolated and returned newest-first using the SQLite row id; Chat context has deterministic safety/memory/feedback/goal ordering; common key/token/secret assignments and OpenAI-style keys are redacted both before persistence and before injection.
+
+## 2026-07-17 — Task 7：自建 Agent 主循环
+
+- Skills used: `planning-with-files`, `test-driven-development`.
+- Process files: `temp/task-07/GOAL.md`, `task_plan.md`, `findings.md`, `progress.md`.
+- RED evidence: after adding an interface-only `Agent` skeleton, 6 behavior tests failed with `NotImplementedError`.
+- GREEN evidence: Task 7 tests passed (6 passed), then the full suite passed (30 passed).
+- Implementation: the handwritten loop persists state/iterations, builds context from durable events and memory, records redacted audit events, pauses dangerous actions, fails blocked/repeated/over-budget behavior, and only succeeds when `complete` follows passing pytest feedback.
+- Boundary: Task 7 records an in-process approval request marker only; SQLite action persistence and post-decision resume are intentionally deferred to Task 8.

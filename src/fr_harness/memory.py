@@ -12,7 +12,7 @@ _SECRET_ASSIGNMENT = re.compile(
 _OPENAI_STYLE_KEY = re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b")
 
 
-def _redact_secrets(value: str) -> str:
+def redact_secrets(value: str) -> str:
     redacted = _SECRET_ASSIGNMENT.sub(r"\1[REDACTED]", value)
     return _OPENAI_STYLE_KEY.sub("[REDACTED]", redacted)
 
@@ -22,8 +22,8 @@ class MemoryStore:
         self.database = database
 
     def add(self, task_id: UUID, category: str, content: str) -> None:
-        safe_category = _redact_secrets(category)
-        safe_content = _redact_secrets(content)
+        safe_category = redact_secrets(category)
+        safe_content = redact_secrets(content)
         with sqlite3.connect(self.database.path) as connection:
             connection.execute(
                 """
@@ -47,7 +47,7 @@ class MemoryStore:
                 """,
                 (str(task_id), limit),
             ).fetchall()
-        return [_redact_secrets(row[0]) for row in rows]
+        return [redact_secrets(row[0]) for row in rows]
 
 
 def build_context(
@@ -63,7 +63,7 @@ def build_context(
         }
     ]
     if memories:
-        memory_text = "\n".join(f"- {_redact_secrets(item)}" for item in memories)
+        memory_text = "\n".join(f"- {redact_secrets(item)}" for item in memories)
         context.append(
             {"role": "system", "content": f"Relevant task memories:\n{memory_text}"}
         )
@@ -72,12 +72,12 @@ def build_context(
         context.append(
             {
                 "role": "system",
-                "content": _redact_secrets(
+                "content": redact_secrets(
                     "Latest pytest feedback: "
                     f"passed={feedback.passed}; failed_tests={failed}; "
                     f"summary={feedback.summary}"
                 ),
             }
         )
-    context.append({"role": "user", "content": _redact_secrets(goal)})
+    context.append({"role": "user", "content": redact_secrets(goal)})
     return context

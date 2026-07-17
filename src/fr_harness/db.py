@@ -79,6 +79,25 @@ class Database:
             iteration=row["iteration"],
         )
 
+    def update_task(self, task: Task) -> None:
+        with self._connect() as connection:
+            cursor = connection.execute(
+                """
+                UPDATE tasks
+                SET goal = ?, workspace = ?, status = ?, iteration = ?
+                WHERE id = ?
+                """,
+                (
+                    task.goal,
+                    str(task.workspace.resolve()),
+                    task.status.value,
+                    task.iteration,
+                    str(task.id),
+                ),
+            )
+        if cursor.rowcount != 1:
+            raise KeyError(f"unknown task: {task.id}")
+
     def append_event(self, task_id: UUID, kind: str, payload: dict[str, object]) -> None:
         with self._connect() as connection:
             connection.execute(
