@@ -26,6 +26,7 @@ class ApprovalDecision(StrEnum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
+    CONSUMED = "consumed"
 
 
 class Action(BaseModel):

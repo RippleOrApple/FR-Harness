@@ -24,6 +24,13 @@ Chronological records of skills, context, subagent work, human interventions, an
 - Result: OpenCode found no blocking ambiguity, correctly identified Task 4 path/approval tests and Task 6 context-role/recent-memory tests.
 - Decision: cold-start gate is now complete; Task 4 may begin. The original sequencing deviation remains documented rather than concealed.
 
+## 2026-07-16 — Task 4：治理护栏与一次性审批
+
+- Skills used: `test-driven-development`.
+- RED evidence: `tests/test_guardrails.py` first failed because `ApprovalStateMachine` and other guardrail interfaces were absent.
+- GREEN evidence: Task 4 tests passed (6 passed); full suite passed (13 passed).
+- Implementation: `resolve_workspace_path()` rejects `..` and resolved symlink escapes; action classification distinguishes allowed, blocked and approval-required actions; the in-memory approval state machine permits exactly one consume after approval and never after rejection.
+
 ## 2026-07-16 — Task 1: package foundation and domain models
 
 - Skills used: `using-git-worktrees`, `executing-plans`, `test-driven-development`.

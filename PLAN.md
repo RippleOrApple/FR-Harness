@@ -118,19 +118,19 @@ class LLMClient(Protocol):
     def next_action(self, context: list[dict[str, str]]) -> Action: ...
 ```
 
-## Task 4：治理护栏与一次性审批状态机
+## Task 4：治理护栏与一次性审批状态机 — 已完成；见 `AGENT_LOG.md`
 
 **文件：** 新建 `src/fr_harness/guardrails.py`、`tests/test_guardrails.py`
 **依赖：** Task 1
 
-- [ ] 先写失败测试：`../secret.txt` 路径必须抛出 `ValueError("outside workspace")`；未批准的动作不可执行。
-- [ ] 运行 `python -m pytest tests/test_guardrails.py -v`，确认因接口未实现而失败。
-- [ ] 实现 `resolve_workspace_path(root, value)`：使用 `Path.resolve()`，任何非 `root` 子路径一律拒绝。
-- [ ] 定义 `GuardDecision`：`allowed`、`requires_approval`、`blocked`。
-- [ ] 规则：读取文件和新建文件可直接执行；覆盖已有文件、运行 pytest 需要审批；越界路径直接阻断。
-- [ ] 实现 `ApprovalStateMachine`：`pending → approved → consumed` 或 `pending → rejected`；同一批准只能消费一次。
-- [ ] 运行 Task 4 与完整测试；确认批准一次、拒绝永不执行、覆盖文件须审批。
-- [ ] 提交：`git commit -m "feat: add guardrails and approval state machine"`。
+- [x] 先写失败测试：`../secret.txt` 路径必须抛出 `ValueError("outside workspace")`；未批准的动作不可执行。
+- [x] 运行 `python -m pytest tests/test_guardrails.py -v`，确认因接口未实现而失败。
+- [x] 实现 `resolve_workspace_path(root, value)`：使用 `Path.resolve()`，任何非 `root` 子路径一律拒绝。
+- [x] 定义 `GuardDecision`：`allowed`、`requires_approval`、`blocked`。
+- [x] 规则：读取文件和新建文件可直接执行；覆盖已有文件、运行 pytest 需要审批；越界路径直接阻断。
+- [x] 实现 `ApprovalStateMachine`：`pending → approved → consumed` 或 `pending → rejected`；同一批准只能消费一次。
+- [x] 运行 Task 4 与完整测试；确认批准一次、拒绝永不执行、覆盖文件须审批。
+- [x] 提交：`git commit -m "feat: add guardrails and approval state machine"`。
 
 **目标接口：**
 
