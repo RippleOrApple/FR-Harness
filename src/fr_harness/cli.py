@@ -191,12 +191,12 @@ def _select_available_port(host: str, start: int) -> int | None:
 
 def _start_server_in_new_terminal(host: str, port: int) -> bool:
     command = (
-        f"cd /d {Path.cwd()} ; "
         f"& .\\.venv\\Scripts\\python.exe -m fr_harness.cli serve --host {host} --port {port}"
     )
     if os.name == "nt":
         subprocess.Popen(
             ["powershell.exe", "-NoExit", "-Command", command],
+            cwd=os.getcwd(),
             creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0),
         )
         return True
