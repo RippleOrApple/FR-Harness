@@ -21,8 +21,11 @@ def _page(title: str, body: str) -> HTMLResponse:
         f"<title>{safe_title}</title>"
         "<style>body{font-family:sans-serif;max-width:900px;margin:2rem auto;line-height:1.5}"
         "input,textarea{width:100%;box-sizing:border-box;margin:.3rem 0 1rem;padding:.5rem}"
-        "button{margin-right:.5rem;padding:.4rem .8rem}pre{white-space:pre-wrap;background:#f5f5f5;padding:1rem}"
-        "nav a{margin-right:1rem}</style></head><body>"
+        "button{margin-right:.5rem;padding:.4rem .8rem}"
+        "pre{white-space:pre-wrap;background:#f5f5f5;padding:1rem}"
+        "nav a{margin-right:1rem}"
+        ".notice{border:2px solid #a16207;background:#fff7ed;padding:1rem;margin:1rem 0}"
+        ".notice strong{display:block;margin-bottom:.25rem}</style></head><body>"
         "<nav><a href='/'>新建任务</a><a href='/approvals'>待审批</a></nav>"
         f"<h1>{safe_title}</h1>{body}</body></html>"
     )
@@ -59,7 +62,7 @@ def create_app(
             "创建修复任务",
             "<form method='post' action='/tasks'>"
             "<label>目标<textarea name='goal' required></textarea></label>"
-            "<label>工作区绝对路径<input name='workspace' required></label>"
+            "<label>工作区路径<input name='workspace' required></label>"
             "<button type='submit'>创建并运行</button></form>",
         )
 
@@ -72,7 +75,9 @@ def create_app(
             raise HTTPException(status_code=400, detail="goal is required")
         workspace = Path(workspace_value).expanduser()
         if not workspace.exists() or not workspace.is_dir():
-            raise HTTPException(status_code=400, detail="workspace must be an existing directory")
+            raise HTTPException(
+                status_code=400, detail="workspace must be an existing directory"
+            )
         task = database.create_task(goal, workspace)
         agent.run_until_stopped(task.id)
         return RedirectResponse(f"/tasks/{task.id}", status_code=303)
@@ -89,9 +94,18 @@ def create_app(
             indent=2,
             default=str,
         )
+        approval_notice = ""
+        if task.status is TaskStatus.PENDING_APPROVAL:
+            approval_notice = (
+                "<div class='notice'><strong>需要你审批</strong>"
+                "Agent 已暂停，正在等待你确认是否允许执行一个可能修改文件或运行测试的操作。"
+                "请进入 <a href='/approvals'>待审批页面</a> 查看并选择批准或拒绝。</div>"
+            )
+        workspace_label = task.workspace.name or "."
         body = (
+            f"{approval_notice}"
             f"<p><strong>目标：</strong>{html.escape(task.goal, quote=True)}</p>"
-            f"<p><strong>工作区：</strong>{html.escape(str(task.workspace), quote=True)}</p>"
+            f"<p><strong>工作区：</strong>{html.escape(workspace_label, quote=True)}</p>"
             f"<p><strong>状态：</strong>{html.escape(task.status.value, quote=True)}</p>"
             f"<p><strong>轮次：</strong>{task.iteration}</p>"
             f"<h2>审计日志</h2><pre>{html.escape(audit, quote=True)}</pre>"
@@ -111,13 +125,15 @@ def create_app(
                 indent=2,
             )
             items.append(
-                "<section>"
+                "<section class='notice'>"
+                "<strong>需要审批</strong>"
+                "<p>请确认是否允许 Agent 执行下面这个操作。批准后任务会继续运行；拒绝后任务会取消。</p>"
                 f"<h2><a href='/tasks/{approval.task_id}'>任务 {approval.task_id}</a></h2>"
                 f"<pre>{html.escape(action_text, quote=True)}</pre>"
                 f"<form method='post' action='/approvals/{approval.id}/approve' style='display:inline'>"
-                "<button type='submit'>批准</button></form>"
+                "<button type='submit'>批准并继续</button></form>"
                 f"<form method='post' action='/approvals/{approval.id}/reject' style='display:inline'>"
-                "<button type='submit'>拒绝</button></form></section>"
+                "<button type='submit'>拒绝并取消任务</button></form></section>"
             )
         return _page("待审批操作", "".join(items))
 

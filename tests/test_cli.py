@@ -163,6 +163,31 @@ def test_setup_writes_provider_env_initializes_database_and_starts_new_terminal(
     assert "new-secret" not in output
 
 
+def test_start_server_new_terminal_uses_powershell_working_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    launched: dict[str, object] = {}
+
+    def fake_popen(command: list[str], **kwargs: object) -> object:
+        launched["command"] = command
+        launched.update(kwargs)
+        return object()
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli.os, "name", "nt")
+    monkeypatch.setattr(cli.subprocess, "Popen", fake_popen)
+
+    assert cli._start_server_in_new_terminal("127.0.0.1", 8000) is True
+
+    command = launched["command"]
+    assert isinstance(command, list)
+    assert command[:3] == ["powershell.exe", "-NoExit", "-Command"]
+    assert "cd /d" not in command[3]
+    assert str(tmp_path) not in command[3]
+    assert launched["cwd"] == tmp_path
+
+
 def test_setup_existing_env_and_keyring_can_decline_overwrite_or_key_update(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

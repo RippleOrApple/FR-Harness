@@ -81,8 +81,28 @@ def test_approvals_page_lists_pending_action(tmp_path: Path) -> None:
     response = client.get("/approvals")
 
     assert response.status_code == 200
+    assert "需要审批" in response.text
+    assert "请确认是否允许 Agent 执行" in response.text
     assert "app.py" in response.text
     assert f"/tasks/{task.id}" in response.text
+
+
+def test_task_detail_links_to_approval_page_when_waiting(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+    database = client.app.state.database
+    task = database.create_task("overwrite app", tmp_path)
+    task.status = TaskStatus.PENDING_APPROVAL
+    database.update_task(task)
+    database.create_approval(
+        task.id, Action(kind=ActionKind.WRITE_FILE, path="app.py", content="new")
+    )
+
+    response = client.get(f"/tasks/{task.id}")
+
+    assert response.status_code == 200
+    assert "需要你审批" in response.text
+    assert "href='/approvals'" in response.text
+    assert str(tmp_path) not in response.text
 
 
 def test_reject_approval_returns_303_and_cancels_task(tmp_path: Path) -> None:
