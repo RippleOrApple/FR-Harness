@@ -27,6 +27,9 @@ def test_readme_documents_usage_and_security_in_utf8() -> None:
     assert "## 安全" in readme
     assert "## Docker" in readme
     assert not re.search(r"\bsk-[A-Za-z0-9_-]{20,}\b", readme)
+    assert "D:\\" not in readme
+    assert "C:\\" not in readme
+    assert "SchoolProject" not in readme
 
 
 def test_gitlab_ci_runs_tests_and_builds_image() -> None:
@@ -36,4 +39,3 @@ def test_gitlab_ci_runs_tests_and_builds_image() -> None:
     assert 'python -m pip install ".[dev]"' in pipeline
     assert "python -m pytest -v" in pipeline
     assert "docker build" in pipeline
-
