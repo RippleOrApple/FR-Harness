@@ -9,7 +9,6 @@ FR-Harness 是一个小而完整的 Python Coding Agent Harness。用户提交�
 安装依赖：
 
 ```powershell
-cd D:\SchoolProject\Summer\FR-Harness
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ```
