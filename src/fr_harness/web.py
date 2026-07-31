@@ -11,7 +11,7 @@ from fr_harness.agent import Agent
 from fr_harness.config import HarnessConfig
 from fr_harness.db import Database
 from fr_harness.llm import LLMClient
-from fr_harness.models import ApprovalDecision, TaskStatus
+from fr_harness.models import Action, ActionKind, ApprovalDecision, Task, TaskStatus
 
 
 def _page(title: str, body: str) -> HTMLResponse:
@@ -25,9 +25,119 @@ def _page(title: str, body: str) -> HTMLResponse:
         "pre{white-space:pre-wrap;background:#f5f5f5;padding:1rem}"
         "nav a{margin-right:1rem}"
         ".notice{border:2px solid #a16207;background:#fff7ed;padding:1rem;margin:1rem 0}"
-        ".notice strong{display:block;margin-bottom:.25rem}</style></head><body>"
+        ".notice strong{display:block;margin-bottom:.25rem}"
+        ".meta{color:#555}"
+        ".approval-grid{margin:.75rem 0}"
+        ".approval-grid p{margin:.25rem 0}"
+        ".approval-title{font-size:1.25rem;margin:0 0 .75rem}"
+        "details{margin-top:1rem}</style></head><body>"
         "<nav><a href='/'>新建任务</a><a href='/approvals'>待审批</a></nav>"
         f"<h1>{safe_title}</h1>{body}</body></html>"
+    )
+
+
+def _status_label(status: TaskStatus) -> str:
+    labels = {
+        TaskStatus.CREATED: "已创建",
+        TaskStatus.RUNNING: "运行中",
+        TaskStatus.PENDING_APPROVAL: "等待审批",
+        TaskStatus.SUCCEEDED: "已成功",
+        TaskStatus.FAILED: "已失败",
+        TaskStatus.CANCELLED: "已取消",
+    }
+    return labels[status]
+
+
+def _action_title(action: Action) -> str:
+    titles = {
+        ActionKind.READ_FILE: "读取文件",
+        ActionKind.WRITE_FILE: "写入/覆盖文件",
+        ActionKind.RUN_PYTEST: "运行测试",
+        ActionKind.REQUEST_APPROVAL: "请求人工确认",
+        ActionKind.COMPLETE: "声明任务完成",
+    }
+    return titles[action.kind]
+
+
+def _action_description(action: Action) -> list[tuple[str, str]]:
+    if action.kind is ActionKind.RUN_PYTEST:
+        return [
+            ("说明", "Agent 想运行 pytest，检查当前代码是否已经修好。"),
+            ("影响", "会执行目标项目的测试代码，不会修改文件。"),
+            ("命令", "python -m pytest -q -p no:cacheprovider"),
+        ]
+    if action.kind is ActionKind.WRITE_FILE:
+        preview = (action.content or "").splitlines()[0] if action.content else "空内容"
+        if len(preview) > 120:
+            preview = preview[:117] + "..."
+        return [
+            ("说明", "Agent 想写入目标文件。"),
+            ("影响", "会修改目标项目中的文件内容。"),
+            ("目标文件", action.path or "未指定"),
+            ("内容预览", preview),
+        ]
+    if action.kind is ActionKind.READ_FILE:
+        return [
+            ("说明", "Agent 想读取目标项目中的文件内容。"),
+            ("影响", "只读取文件，不会修改文件。"),
+            ("目标文件", action.path or "未指定"),
+        ]
+    if action.kind is ActionKind.REQUEST_APPROVAL:
+        return [
+            ("说明", action.reason or "Agent 请求你确认下一步是否继续。"),
+            ("影响", "批准后任务继续，拒绝后任务取消。"),
+        ]
+    return [
+        ("说明", action.reason or "Agent 认为任务已经完成。"),
+        ("影响", "批准后会记录该任务完成。"),
+    ]
+
+
+def _definition_list(rows: list[tuple[str, str]]) -> str:
+    rendered = ["<div class='approval-grid'>"]
+    for label, value in rows:
+        rendered.append(
+            "<p>"
+            f"{html.escape(label, quote=True)}："
+            f"{html.escape(value, quote=True)}</p>"
+        )
+    rendered.append("</div>")
+    return "".join(rendered)
+
+
+def _approval_card(task: Task, approval_id: UUID, action: Action) -> str:
+    action_json = json.dumps(
+        action.model_dump(mode="json"),
+        ensure_ascii=False,
+        indent=2,
+    )
+    task_rows = [
+        ("任务", task.goal),
+        ("工作区", task.workspace.name or "."),
+        ("当前状态", _status_label(task.status)),
+        ("已执行轮次", str(task.iteration)),
+    ]
+    detail_rows = [
+        ("任务编号", str(task.id)),
+        ("审批编号", str(approval_id)),
+    ]
+    return (
+        "<section class='notice'>"
+        f"<h2 class='approval-title'>需要审批：{html.escape(_action_title(action), quote=True)}</h2>"
+        "<p>请确认是否允许 Agent 执行下面这个操作。批准后任务会继续运行；拒绝后任务会取消。</p>"
+        "<h3>关联任务</h3>"
+        f"{_definition_list(task_rows)}"
+        "<h3>本次操作</h3>"
+        f"{_definition_list(_action_description(action))}"
+        f"<p><a href='/tasks/{task.id}'>查看任务详情</a></p>"
+        f"<form method='post' action='/approvals/{approval_id}/approve' style='display:inline'>"
+        "<button type='submit'>批准并继续</button></form>"
+        f"<form method='post' action='/approvals/{approval_id}/reject' style='display:inline'>"
+        "<button type='submit'>拒绝并取消任务</button></form>"
+        "<details><summary>技术详情</summary>"
+        f"{_definition_list(detail_rows)}"
+        f"<h4>原始动作 JSON</h4><pre>{html.escape(action_json, quote=True)}</pre>"
+        "</details></section>"
     )
 
 
@@ -106,7 +216,7 @@ def create_app(
             f"{approval_notice}"
             f"<p><strong>目标：</strong>{html.escape(task.goal, quote=True)}</p>"
             f"<p><strong>工作区：</strong>{html.escape(workspace_label, quote=True)}</p>"
-            f"<p><strong>状态：</strong>{html.escape(task.status.value, quote=True)}</p>"
+            f"<p><strong>状态：</strong>{html.escape(_status_label(task.status), quote=True)}</p>"
             f"<p><strong>轮次：</strong>{task.iteration}</p>"
             f"<h2>审计日志</h2><pre>{html.escape(audit, quote=True)}</pre>"
         )
@@ -119,22 +229,8 @@ def create_app(
             return _page("待审批操作", "<p>当前没有待审批操作。</p>")
         items: list[str] = []
         for approval in approvals:
-            action_text = json.dumps(
-                approval.action.model_dump(mode="json"),
-                ensure_ascii=False,
-                indent=2,
-            )
-            items.append(
-                "<section class='notice'>"
-                "<strong>需要审批</strong>"
-                "<p>请确认是否允许 Agent 执行下面这个操作。批准后任务会继续运行；拒绝后任务会取消。</p>"
-                f"<h2><a href='/tasks/{approval.task_id}'>任务 {approval.task_id}</a></h2>"
-                f"<pre>{html.escape(action_text, quote=True)}</pre>"
-                f"<form method='post' action='/approvals/{approval.id}/approve' style='display:inline'>"
-                "<button type='submit'>批准并继续</button></form>"
-                f"<form method='post' action='/approvals/{approval.id}/reject' style='display:inline'>"
-                "<button type='submit'>拒绝并取消任务</button></form></section>"
-            )
+            task = database.get_task(approval.task_id)
+            items.append(_approval_card(task, approval.id, approval.action))
         return _page("待审批操作", "".join(items))
 
     def _decide(approval_id: UUID, decision: ApprovalDecision) -> RedirectResponse:
