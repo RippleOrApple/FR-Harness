@@ -287,12 +287,19 @@ def test_docker_distribution_files_enforce_safe_defaults() -> None:
 
 
 def test_windows_quick_start_script_is_relative_and_safe() -> None:
-    script = (ROOT / "启动 FR-Harness.cmd").read_text(encoding="utf-8")
+    script_path = ROOT / "启动 FR-Harness.cmd"
+    raw_script = script_path.read_bytes()
+    script = raw_script.decode("ascii")
 
     assert "%~dp0" in script
     assert ".venv\\Scripts\\python.exe" in script
     assert "-m fr_harness.cli serve --host 127.0.0.1 --port 8000" in script
     assert "-m fr_harness.cli setup" in script
+    assert "rundll32 url.dll,FileProtocolHandler http://127.0.0.1:8000/" in script
+    assert "netstat -ano" in script
+    assert "findstr" in script
+    assert b"\r\n" in raw_script
+    assert b"\n" not in raw_script.replace(b"\r\n", b"")
     assert "D:\\" not in script
     assert "C:\\" not in script
     assert "SchoolProject" not in script

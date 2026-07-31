@@ -79,12 +79,31 @@ def test_run_pytest_uses_fixed_command_and_workspace(
 
     result = ToolDispatcher().execute(Action(kind=ActionKind.RUN_PYTEST), tmp_path)
 
-    assert observed["command"] == [sys.executable, "-m", "pytest", "-q"]
+    assert observed["command"] == [
+        sys.executable,
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+    ]
     assert observed["cwd"] == tmp_path.resolve()
     assert observed["shell"] is False
     assert result.ok is False
     assert result.feedback is not None
     assert result.feedback.failed_tests == ["test_app.py::test_greeting"]
+
+
+def test_run_pytest_does_not_create_pytest_cache(tmp_path: Path) -> None:
+    (tmp_path / "test_sample.py").write_text(
+        "def test_sample():\n    assert True\n",
+        encoding="utf-8",
+    )
+
+    result = ToolDispatcher().execute(Action(kind=ActionKind.RUN_PYTEST), tmp_path)
+
+    assert result.ok is True
+    assert not (tmp_path / ".pytest_cache").exists()
 
 
 def test_dispatcher_rejects_non_tool_action(tmp_path: Path) -> None:

@@ -103,7 +103,7 @@ WebUI / CLI
   -> 受限 ToolDispatcher
        |- UTF-8 文件读取
        |- UTF-8 文件写入
-       `- 固定命令 python -m pytest -q
+       `- 固定命令 python -m pytest -q -p no:cacheprovider
   -> Feedback / Memory / Audit
   -> SQLite
 
@@ -144,7 +144,7 @@ created -> running -> pending_approval -> running -> succeeded
 
 1. 在“新建任务”页填写目标和现存工作区目录。
 2. 在任务详情页查看状态、轮次和转义后的审计 JSON。
-3. 在“待审批”页批准或拒绝危险动作。
+3. 在“待审批”页查看中文操作摘要，批准或拒绝危险动作；原始 Action JSON 会折叠在技术详情里。
 
 首版是单进程同步执行；创建任务的 HTTP 请求会运行到成功、失败或等待审批为止。WebUI 没有登录鉴权，默认建议只监听 `127.0.0.1`。
 
@@ -275,7 +275,7 @@ docker run --rm \
 - 文件路径通过解析后的工作区根目录检查；工作区外访问直接阻断并使任务失败。
 - 读文件和新建文件可直接执行；覆盖已有文件与运行 pytest 默认要求一次性审批。
 - 批准采用 SQLite 条件更新从 `approved` 原子变为 `consumed`，同一动作不会重复执行。
-- pytest 只能使用固定参数数组 `[sys.executable, "-m", "pytest", "-q"]`，`shell=False`。
+- pytest 只能使用固定参数数组 `[sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"]`，`shell=False`，并禁用 `.pytest_cache` 写入。
 - WebUI 会 HTML 转义目标与审计 JSON，但首版没有登录鉴权，不应直接暴露到不可信网络。
 
 ## 工作区边界

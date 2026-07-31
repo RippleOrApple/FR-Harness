@@ -87,6 +87,62 @@ def test_approvals_page_lists_pending_action(tmp_path: Path) -> None:
     assert f"/tasks/{task.id}" in response.text
 
 
+def test_approvals_page_describes_pytest_approval_for_humans(tmp_path: Path) -> None:
+    workspace = tmp_path / "shopping-cart"
+    workspace.mkdir()
+    client = make_client(tmp_path)
+    database = client.app.state.database
+    task = database.create_task("修复购物车折扣计算，让 pytest 通过", workspace)
+    task.status = TaskStatus.PENDING_APPROVAL
+    task.iteration = 2
+    database.update_task(task)
+    database.create_approval(task.id, Action(kind=ActionKind.RUN_PYTEST))
+
+    response = client.get("/approvals")
+
+    assert response.status_code == 200
+    assert "需要审批：运行测试" in response.text
+    assert "关联任务" in response.text
+    assert "修复购物车折扣计算，让 pytest 通过" in response.text
+    assert "工作区：shopping-cart" in response.text
+    assert "当前状态：等待审批" in response.text
+    assert "已执行轮次：2" in response.text
+    assert "本次操作" in response.text
+    assert "检查当前代码是否已经修好" in response.text
+    assert "不会修改文件" in response.text
+    assert "命令：python -m pytest -q -p no:cacheprovider" in response.text
+    assert "技术详情" in response.text
+    assert f"任务编号：{task.id}" in response.text
+    assert f"<h2><a href='/tasks/{task.id}'>任务 {task.id}</a></h2>" not in response.text
+
+
+def test_approvals_page_describes_file_write_without_exposing_full_content_first(
+    tmp_path: Path,
+) -> None:
+    client = make_client(tmp_path)
+    database = client.app.state.database
+    task = database.create_task("修复问候语", tmp_path)
+    task.status = TaskStatus.PENDING_APPROVAL
+    database.update_task(task)
+    database.create_approval(
+        task.id,
+        Action(
+            kind=ActionKind.WRITE_FILE,
+            path="app.py",
+            content="def greeting():\n    return 'hello'\n",
+        ),
+    )
+
+    response = client.get("/approvals")
+
+    assert response.status_code == 200
+    assert "需要审批：写入/覆盖文件" in response.text
+    assert "目标文件：app.py" in response.text
+    assert "会修改目标项目中的文件内容" in response.text
+    assert "内容预览：def greeting():" in response.text
+    assert "原始动作 JSON" in response.text
+
+
 def test_task_detail_links_to_approval_page_when_waiting(tmp_path: Path) -> None:
     client = make_client(tmp_path)
     database = client.app.state.database
