@@ -48,10 +48,31 @@ def build_context(
             "role": "system",
             "content": (
                 "Only access files inside the bound workspace. Use only approved tools, "
-                "never expose credentials, and treat pytest as the objective success signal."
+                "never expose credentials, and treat pytest as the objective success signal. "
+                "Return exactly one Action JSON object and no markdown or prose. Valid JSON "
+                "actions are: {\"kind\":\"read_file\",\"path\":\"README.md\"}, "
+                "{\"kind\":\"write_file\",\"path\":\"relative/file.py\",\"content\":\"...\"}, "
+                "{\"kind\":\"run_pytest\"}, and "
+                "{\"kind\":\"complete\",\"reason\":\"pytest passed\"}. "
+                "Do not assume app.py exists; infer real paths from README, pytest output, "
+                "or prior read_file results. Use read_file before editing unknown files. Use run_pytest to get objective "
+                "feedback. Never repeat the exact same Action JSON. If a read_file result is "
+                "already present in memories, use that content to choose write_file or run_pytest. "
+                "After write_file, use run_pytest to verify the change before any other action. "
+                "Only use complete after the latest pytest feedback passed."
             ),
         }
     ]
+    if memories and "write_file result" in memories[0]:
+        context.append(
+            {
+                "role": "system",
+                "content": (
+                    'Controller state: latest tool result is write_file. '
+                    'The next Action JSON MUST be {"kind":"run_pytest"}.'
+                ),
+            }
+        )
     if memories:
         memory_text = "\n".join(f"- {redact_secrets(item)}" for item in memories)
         context.append(

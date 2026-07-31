@@ -181,7 +181,12 @@ class Agent:
             },
         )
         if result.output:
-            self.memory.add(task.id, "tool_result", result.output)
+            label = action.kind.value
+            if action.path:
+                label = f"{label} result for {action.path}"
+            else:
+                label = f"{label} result"
+            self.memory.add(task.id, "tool_result", f"{label}: {result.output}")
         if result.feedback is not None:
             safe_feedback = Feedback(
                 passed=result.feedback.passed,

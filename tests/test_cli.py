@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from fr_harness import cli
+from fr_harness.models import Action, ActionKind
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -87,6 +88,163 @@ def test_test_command_uses_fixed_pytest_command(
     assert cli.main(["test"]) == 0
     assert observed["command"] == [sys.executable, "-m", "pytest", "-v"]
     assert observed["shell"] is False
+
+
+class FakeCredentialStore:
+    def __init__(self, existing: str | None = None) -> None:
+        self.value = existing
+        self.set_values: list[str] = []
+
+    def get(self) -> str | None:
+        return self.value
+
+    def set(self, value: str) -> None:
+        self.value = value
+        self.set_values.append(value)
+
+    def clear(self) -> bool:
+        was_present = self.value is not None
+        self.value = None
+        return was_present
+
+
+def test_setup_writes_provider_env_initializes_database_and_starts_new_terminal(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    prompts: list[str] = []
+    answers = iter(["", "", "", "new-secret"])
+    launched: dict[str, object] = {}
+
+    def fake_input(prompt: str) -> str:
+        prompts.append(prompt)
+        return next(answers)
+
+    def fake_hidden(prompt: str) -> str:
+        prompts.append(prompt)
+        return next(answers)
+
+    class FakeLLM:
+        def __init__(self, base_url: str, model: str, api_key: str) -> None:
+            launched["doctor_base_url"] = base_url
+            launched["doctor_model"] = model
+            launched["doctor_key"] = api_key
+
+        def next_action(self, context: list[dict[str, str]]) -> Action:
+            launched["doctor_context"] = context
+            return Action(kind=ActionKind.RUN_PYTEST)
+
+    def fake_start(host: str, port: int) -> bool:
+        launched["host"] = host
+        launched["port"] = port
+        return True
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli, "_prompt", fake_input)
+    monkeypatch.setattr(cli, "_hidden_input", fake_hidden)
+    monkeypatch.setattr(cli, "OpenAICompatibleLLM", FakeLLM)
+    monkeypatch.setattr(cli, "_start_server_in_new_terminal", fake_start)
+    monkeypatch.setattr(cli, "_is_port_available", lambda host, port: port != 8000)
+
+    exit_code = cli.main(["setup"], credential_store=FakeCredentialStore())
+
+    assert exit_code == 0
+    assert "FR_LLM_BASE_URL=https://api.deepseek.com" in (tmp_path / ".env").read_text(encoding="utf-8")
+    assert "FR_LLM_MODEL=deepseek-v4-flash" in (tmp_path / ".env").read_text(encoding="utf-8")
+    assert (tmp_path / "fr_harness.sqlite3").exists()
+    assert launched["doctor_base_url"] == "https://api.deepseek.com"
+    assert launched["doctor_model"] == "deepseek-v4-flash"
+    assert launched["doctor_key"] == "new-secret"
+    assert launched["host"] == "127.0.0.1"
+    assert launched["port"] == 8001
+    output = capsys.readouterr().out
+    assert "http://127.0.0.1:8001/" in output
+    assert "new-secret" not in output
+
+
+def test_setup_existing_env_and_keyring_can_decline_overwrite_or_key_update(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / ".env").write_text(
+        "CUSTOM=value\nFR_LLM_BASE_URL=https://old.example/v1\nFR_LLM_MODEL=old-model\n",
+        encoding="utf-8",
+    )
+    answers = iter(["", "", "", "n", "n"])
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli, "_prompt", lambda prompt: next(answers))
+    monkeypatch.setattr(cli, "_start_server_in_new_terminal", lambda host, port: True)
+    monkeypatch.setattr(cli, "_run_doctor", lambda store: 0)
+    monkeypatch.setattr(cli, "_is_port_available", lambda host, port: True)
+
+    store = FakeCredentialStore(existing="old-secret")
+
+    exit_code = cli.main(["setup"], credential_store=store)
+
+    assert exit_code == 0
+    env_text = (tmp_path / ".env").read_text(encoding="utf-8")
+    assert "CUSTOM=value" in env_text
+    assert "FR_LLM_BASE_URL=https://old.example/v1" in env_text
+    assert "FR_LLM_MODEL=old-model" in env_text
+    assert store.set_values == []
+
+
+def test_doctor_reports_invalid_base_url_without_printing_key(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    (tmp_path / ".env").write_text(
+        "FR_LLM_BASE_URL=api.deepseek.com\nFR_LLM_MODEL=deepseek-v4-flash\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("FR_LLM_BASE_URL", raising=False)
+    monkeypatch.delenv("FR_LLM_MODEL", raising=False)
+
+    exit_code = cli.main(["doctor"], credential_store=FakeCredentialStore("secret"))
+
+    assert exit_code == 2
+    output = capsys.readouterr().out
+    assert "缺少 http:// 或 https://" in output
+    assert "secret" not in output
+
+
+def test_doctor_checks_action_json_with_configured_model(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    (tmp_path / ".env").write_text(
+        "FR_LLM_BASE_URL=https://api.deepseek.com\nFR_LLM_MODEL=deepseek-v4-flash\n",
+        encoding="utf-8",
+    )
+    observed: dict[str, object] = {}
+
+    class FakeLLM:
+        def __init__(self, base_url: str, model: str, api_key: str) -> None:
+            observed.update(base_url=base_url, model=model, api_key=api_key)
+
+        def next_action(self, context: list[dict[str, str]]) -> Action:
+            observed["context"] = context
+            return Action(kind=ActionKind.RUN_PYTEST)
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(cli, "OpenAICompatibleLLM", FakeLLM)
+    monkeypatch.delenv("FR_LLM_BASE_URL", raising=False)
+    monkeypatch.delenv("FR_LLM_MODEL", raising=False)
+
+    exit_code = cli.main(["doctor"], credential_store=FakeCredentialStore("secret"))
+
+    assert exit_code == 0
+    assert observed["base_url"] == "https://api.deepseek.com"
+    assert observed["model"] == "deepseek-v4-flash"
+    assert observed["api_key"] == "secret"
+    output = capsys.readouterr().out
+    assert "Action JSON：OK" in output
+    assert "secret" not in output
 
 
 def test_docker_distribution_files_enforce_safe_defaults() -> None:

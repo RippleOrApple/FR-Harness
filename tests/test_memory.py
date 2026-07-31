@@ -51,6 +51,34 @@ def test_build_context_orders_security_memory_feedback_and_goal() -> None:
     assert context[3] == {"role": "user", "content": "fix greeting"}
 
 
+def test_build_context_instructs_llm_to_return_action_json() -> None:
+    context = build_context("fix greeting", [], None)
+
+    system_prompt = context[0]["content"]
+    assert "JSON" in system_prompt
+    assert "Action" in system_prompt
+    assert "read_file" in system_prompt
+    assert "write_file" in system_prompt
+    assert "run_pytest" in system_prompt
+    assert '{"kind":"read_file","path":"README.md"}' in system_prompt
+    assert "Do not assume app.py exists" in system_prompt
+    assert "Never repeat" in system_prompt
+    assert "write_file or run_pytest" in system_prompt
+    assert "After write_file, use run_pytest" in system_prompt
+
+
+def test_build_context_promotes_write_file_state_to_controller_instruction() -> None:
+    context = build_context(
+        "fix greeting",
+        ["write_file result for app.py: write_file completed for app.py; next action should be run_pytest"],
+        None,
+    )
+
+    serialized = "\n".join(message["content"] for message in context)
+    assert 'latest tool result is write_file' in serialized
+    assert '{"kind":"run_pytest"}' in serialized
+
+
 def test_memory_and_context_redact_credentials(tmp_path: Path) -> None:
     database, store = make_store(tmp_path)
     task = database.create_task("secure task", tmp_path)

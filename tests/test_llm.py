@@ -27,6 +27,8 @@ def test_openai_compatible_client_parses_action_without_network() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.path == "/v1/chat/completions"
         assert request.headers["Authorization"] == "Bearer test-key"
+        body = json.loads(request.content)
+        assert body["response_format"] == {"type": "json_object"}
         return httpx.Response(200, json=payload)
 
     client = OpenAICompatibleLLM(

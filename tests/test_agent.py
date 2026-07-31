@@ -110,6 +110,24 @@ def test_agent_fails_complete_before_a_passing_pytest(tmp_path: Path) -> None:
     assert database.list_events(task.id)[-1]["payload"]["reason"] == "pytest has not passed"
 
 
+def test_agent_labels_tool_results_in_next_context(tmp_path: Path) -> None:
+    database = make_database(tmp_path)
+    (tmp_path / "app.py").write_text("value = 'wrong'", encoding="utf-8")
+    task = database.create_task("inspect app", tmp_path)
+    llm = RecordingLLM(
+        [
+            Action(kind=ActionKind.READ_FILE, path="app.py"),
+            Action(kind=ActionKind.COMPLETE, reason="done"),
+        ]
+    )
+
+    Agent(database, llm, classifier=allow_all).run_until_stopped(task.id)
+
+    second_context = "\n".join(message["content"] for message in llm.contexts[1])
+    assert "read_file result for app.py" in second_context
+    assert "value = 'wrong'" in second_context
+
+
 def test_agent_fails_on_two_consecutive_identical_actions(tmp_path: Path) -> None:
     database = make_database(tmp_path)
     (tmp_path / "app.py").write_text("value = 1", encoding="utf-8")
