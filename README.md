@@ -20,6 +20,8 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m fr_harness.cli setup
 ```
 
+Windows 也可以直接双击根目录下的 `启动 FR-Harness.cmd`：已有 `.env` 时会打开浏览器并启动 WebUI；首次运行没有 `.env` 时会进入同一个 `setup` 向导。
+
 `setup` 会完成这些事：
 
 1. 交互式选择模型供应商，默认 DeepSeek。

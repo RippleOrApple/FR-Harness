@@ -196,7 +196,7 @@ def _start_server_in_new_terminal(host: str, port: int) -> bool:
     if os.name == "nt":
         subprocess.Popen(
             ["powershell.exe", "-NoExit", "-Command", command],
-            cwd=Path.cwd(),
+            cwd=os.getcwd(),
             creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0),
         )
         return True

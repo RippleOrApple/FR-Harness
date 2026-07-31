@@ -185,7 +185,7 @@ def test_start_server_new_terminal_uses_powershell_working_directory(
     assert command[:3] == ["powershell.exe", "-NoExit", "-Command"]
     assert "cd /d" not in command[3]
     assert str(tmp_path) not in command[3]
-    assert launched["cwd"] == tmp_path
+    assert launched["cwd"] == str(tmp_path)
 
 
 def test_setup_existing_env_and_keyring_can_decline_overwrite_or_key_update(
@@ -284,4 +284,18 @@ def test_docker_distribution_files_enforce_safe_defaults() -> None:
         assert ignored in dockerignore
     assert "OPENAI_API_KEY=" in env_example
     assert "sk-" not in env_example
+
+
+def test_windows_quick_start_script_is_relative_and_safe() -> None:
+    script = (ROOT / "启动 FR-Harness.cmd").read_text(encoding="utf-8")
+
+    assert "%~dp0" in script
+    assert ".venv\\Scripts\\python.exe" in script
+    assert "-m fr_harness.cli serve --host 127.0.0.1 --port 8000" in script
+    assert "-m fr_harness.cli setup" in script
+    assert "D:\\" not in script
+    assert "C:\\" not in script
+    assert "SchoolProject" not in script
+    assert "OPENAI_API_KEY=" not in script
+    assert "sk-" not in script
 
