@@ -14,6 +14,22 @@ class ToolDispatcher:
 
         if action.kind is ActionKind.READ_FILE:
             target = self._target(root, action)
+            if not target.exists():
+                return ToolResult(
+                    ok=False,
+                    output=(
+                        f"read_file failed for {action.path}: file not found; "
+                        "read README.md, read pytest output, or use run_pytest to identify real files"
+                    ),
+                )
+            if target.is_dir():
+                return ToolResult(
+                    ok=False,
+                    output=(
+                        f"read_file failed for {action.path}: path is a directory; "
+                        "read a specific file such as README.md or use run_pytest"
+                    ),
+                )
             return ToolResult(ok=True, output=target.read_text(encoding="utf-8"))
 
         if action.kind is ActionKind.WRITE_FILE:
@@ -29,7 +45,13 @@ class ToolDispatcher:
                         target,
                         (current_stat.st_atime, float(int(previous_mtime) + 1)),
                     )
-            return ToolResult(ok=True, output=f"wrote {action.path}")
+            return ToolResult(
+                ok=True,
+                output=(
+                    f"write_file completed for {action.path}; "
+                    "next action should be run_pytest"
+                ),
+            )
 
         if action.kind is ActionKind.RUN_PYTEST:
             completed = subprocess.run(

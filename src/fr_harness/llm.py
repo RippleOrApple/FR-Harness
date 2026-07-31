@@ -38,7 +38,11 @@ class OpenAICompatibleLLM:
         response = self._http_client.post(
             f"{self._base_url}/chat/completions",
             headers={"Authorization": f"Bearer {self._api_key}"},
-            json={"model": self._model, "messages": context},
+            json={
+                "model": self._model,
+                "messages": context,
+                "response_format": {"type": "json_object"},
+            },
         )
         response.raise_for_status()
         content = response.json()["choices"][0]["message"]["content"]
