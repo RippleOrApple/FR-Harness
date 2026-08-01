@@ -797,7 +797,7 @@ Expected: 全量测试 PASS；演示恰好三行 PASS；凭据扫描无匹配。
 Run:
 
 ```powershell
-opencode run --pure --model nju/deepseek-v4-flash --dir . --file SPEC.md --file PLAN.md --file D:\SchoolProject\Summer\AI4SE_Final_Project_A_Coding_Agent_Harness.md --file D:\SchoolProject\Summer\通用要求.md "执行规格符合性评审。检查仓库代码和测试，但不要修改文件。逐项列出证据和 Critical/Major/Minor 问题；没有证据的历史流程不得推测为已完成。"
+opencode run --pure --model nju/deepseek-v4-flash --dir . --file SPEC.md --file PLAN.md --file 作业要求.md --file 通用要求.md "执行规格符合性评审。检查仓库代码和测试，但不要修改文件。逐项列出证据和 Critical/Major/Minor 问题；没有证据的历史流程不得推测为已完成。"
 ```
 
 - [ ] **Step 3: 修复确认的规格问题**

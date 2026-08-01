@@ -182,3 +182,24 @@ Chronological records of skills, context, subagent work, human interventions, an
 - 最终本地门禁：91 passed；三项 MockLLM 机制演示 PASS；Git 历史敏感信息扫描 0 match。
 - Review artifacts: `temp/reviews/spec-compliance-review.md`、`temp/reviews/code-quality-review.md`。
 - 真实性：这是后补评审，不能倒签为 Task 1–12 当时已经执行的逐 task 双评审。
+
+## 2026-08-01：交互式 CLI 与 Release 方案
+
+- **关键 prompt / context：** 助教明确允许作业 A 只提供 CLI，并以 GitHub Release 链接作为部署交付；用户选择 Windows x64 单文件 EXE、纯交互式中文菜单、可选本地 WebUI，并要求最终提交 commit、PR 和 Release。
+- **人工判断：** 主入口采用持续菜单；工作区默认当前目录；目标单行输入；pytest 每个任务授权一次；覆盖已有文件仍逐次审批；diff 和完整 pytest 输出按需展开；历史任务允许恢复等待审批和暂停状态。
+- **隔离方式：** 从最新 `origin/main` 创建 `agent/cli-release` worktree，保留原始 checkout 中用户未跟踪文件，不把其带入提交。
+- **TDD 证据：** 从 105 passed 基线开始，依次经历运行路径模块缺失、TaskService 模块缺失、Console 模块缺失、CLI/Release 行为缺失等红灯；每阶段完成后全量回归分别为 111、117、122、129、132、136 passed。
+- **实现：** 新增 `RuntimePaths`、paused 状态、任务级 pytest 权限、数据库迁移、完整测试日志、`TaskService`、中文 `InteractiveConsole`、无参数/`run` 入口和包内 `demo`。
+- **配置：** EXE 使用 LocalAppData；API Key 使用 Windows Credential Manager；首次启动配置缺失时自动进入 setup。源码模式与 `FR_DATA_DIR` / `FR_CONFIG_PATH` 覆盖保持兼容。
+- **审批呈现：** 任务列表以目标而非 UUID 为主；已有文件写入显示文件、原因、增删行数和可选 unified diff；原始 JSON 不再作为默认用户界面。
+- **缓存修复：** 固定 pytest 命令增加 `-p no:cacheprovider`，目标目录不创建 `.pytest_cache`。
+
+## 2026-08-01：Windows EXE 实际构建与缺陷修复
+
+- **Release 实现：** PyInstaller one-file、中文快速开始、双击启动脚本、Windows tag workflow、ZIP 与 SHA256；workflow 在上传前运行单元测试、EXE 版本、离线演示和独立项目 pytest。
+- **第一次成品验证：** EXE `--version` 成功，但离线演示两项失败。根因是冻结后的 `sys.executable` 指向 EXE 自身，不能作为 Python 解释器执行 `-m pytest`。
+- **人工判断：** 离线演示改用确定性 ToolDispatcher，不把演示与外部 pytest 安装绑定；真实任务仍必须执行目标项目的 pytest，因此不能只修演示。
+- **第二个成品缺陷：** 真实工具路径同样受冻结解释器影响。新增隐藏的固定参数 `_pytest` 入口，冻结工具只调用 `[EXE, "_pytest"]`，仍保持 `shell=False`，且不接受 LLM 参数。
+- **成品证据：** 重建后的 EXE 显示版本 1.0.0，四项演示全部 PASS；在独立样例项目中成功导入项目模块并得到 `1 passed`。
+- **偏差与诚实边界：** GitHub PR、托管 CI 和 `v1.0.0` Release 尚未发生时，只记录为待交付，不提前写成已发布。完整远程证据将在实际完成后追加。
+- **仓库整理：** 过期 PR #5 已关闭并注明被后续合并工作取代；没有删除其历史分支或改写既有证据。

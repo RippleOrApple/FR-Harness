@@ -354,11 +354,7 @@ def test_windows_quick_start_script_is_relative_and_safe() -> None:
 
     assert "%~dp0" in script
     assert ".venv\\Scripts\\python.exe" in script
-    assert "-m fr_harness.cli serve --host 127.0.0.1 --port 8000" in script
-    assert "-m fr_harness.cli setup" in script
-    assert "rundll32 url.dll,FileProtocolHandler http://127.0.0.1:8000/" in script
-    assert "netstat -ano" in script
-    assert "findstr" in script
+    assert "-m fr_harness.cli run" in script
     assert b"\r\n" in raw_script
     assert b"\n" not in raw_script.replace(b"\r\n", b"")
     assert "D:\\" not in script

@@ -1,54 +1,73 @@
 # FR-Harness
 
-FR-Harness 是一个小而完整的 Python Coding Agent Harness。用户提交代码修复目标后，它在绑定的本地工作区内读取或修改文件、运行 `pytest`，把客观失败结果回灌给 LLM，并在危险动作前暂停等待人工审批。
+FR-Harness 是一个面向 Python 项目的安全 Coding Agent Harness。它在用户指定的工作区内读取和修改文件，以 `pytest` 作为客观反馈，并在覆盖已有文件等危险操作前暂停等待审批。Agent 控制循环、状态恢复、护栏、审计和记忆均由项目自行实现。
 
-项目重点是自己实现 Agent 控制循环，而不是套用 LangChain、AutoGen、CrewAI 等现成 Agent runner。核心机制都可以用 `MockLLM` 离线、确定性测试。
+## 下载即用（推荐）
 
-## 快速开始
+课程验收采用 CLI Release 方案。Windows x64 用户可从 [v1.0.0 Release](https://github.com/RippleOrApple/FR-Harness/releases/tag/v1.0.0) 下载 `FR-Harness-Windows-x64.zip`：
 
-安装依赖：
+1. 解压整个 ZIP。
+2. 双击 `启动 FR-Harness.cmd` 或 `FR-Harness.exe`。
+3. 首次运行按中文向导选择供应商、确认模型并隐藏输入 API Key。
+4. 在主菜单选择“新建修复任务”。
+
+Release 为单文件 Windows x64 程序，无需安装 Python。ZIP 同时提供 SHA256 校验文件和中文快速开始说明。
+
+无需配置即可先做离线检查：
 
 ```powershell
-cd FR-Harness
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\FR-Harness.exe demo
 ```
 
-推荐使用交互式配置向导：
+预期看到四项 `PASS`：危险操作审批、失败反馈纠错、一次性文件审批和任务级 pytest 权限。该演示使用 `MockLLM` 和确定性反馈，不读取 API Key，也不访问网络。
 
-```powershell
-.\.venv\Scripts\python.exe -m fr_harness.cli setup
-```
+## 交互式 CLI
 
-Windows 也可以直接双击根目录下的 `启动 FR-Harness.cmd`：已有 `.env` 时会打开浏览器并启动 WebUI；首次运行没有 `.env` 时会进入同一个 `setup` 向导。
-
-`setup` 会完成这些事：
-
-1. 交互式选择模型供应商，默认 DeepSeek。
-2. 确认或修改 `FR_LLM_BASE_URL` 和 `FR_LLM_MODEL`。
-3. 如果 `.env` 已存在，先展示当前配置并询问是否覆盖；`OPENAI_API_KEY` 会显示为隐藏值。
-4. 只把非敏感配置写入 `.env`：`FR_LLM_BASE_URL`、`FR_LLM_MODEL`、`FR_DATABASE_PATH`。
-5. 将 API Key 用隐藏输入保存到 system keyring。
-6. 初始化 SQLite 数据库。
-7. 运行 `doctor` 自检。
-8. 自检通过后，新开 PowerShell 窗口启动 WebUI，默认监听 `127.0.0.1`。
-9. 如果端口 `8000` 被占用，自动尝试 `8001`、`8002`、`8003`。
-
-启动成功后访问：
+直接启动 `FR-Harness.exe`、运行 `fr-harness` 或执行 `fr-harness run`，都会进入持续运行的中文主菜单：
 
 ```text
-http://127.0.0.1:8000/
+1. 新建修复任务
+2. 查看历史任务
+3. 配置与自检
+4. 退出
 ```
 
-如果不希望自动启动 WebUI：
+新建任务时：
+
+- 工作区直接回车会使用当前目录，也可以输入另一个现存目录。
+- 修复目标采用单行输入，开始前会再次确认。
+- 每个任务只询问一次是否允许运行 pytest；授权不会跨任务复用。
+- 覆盖已有文件仍逐次审批，并可先查看 unified diff。
+- pytest 默认显示摘要，失败时可以展开完整输出。
+- 网络错误、限流和服务端临时错误会暂停任务，可从历史任务恢复。
+- 任务结束后回到主菜单，不需要重新启动程序。
+
+Windows EXE 的配置、SQLite 数据库和日志默认保存在当前用户的 `LocalAppData/FR-Harness`。API Key 保存到 Windows Credential Manager，不写入 `.env`。
+
+## 从源码运行
+
+需要 Python 3.12 或更高版本：
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m fr_harness.cli
+```
+
+也可以双击仓库根目录的 `启动 FR-Harness.cmd`。源码模式默认把配置和数据库放在当前仓库目录；可通过 `FR_DATA_DIR` 指向其他数据目录。
+
+首次配置或重新配置：
 
 ```powershell
 .\.venv\Scripts\python.exe -m fr_harness.cli setup --no-start
+.\.venv\Scripts\python.exe -m fr_harness.cli doctor
 ```
 
-## 供应商预设
+`setup` 会选择模型供应商、确认 Base URL 和模型名、把非敏感配置写入 `.env`、把 API Key 存入 system keyring、初始化数据库并运行 `doctor`。如果直接进入交互模式且配置缺失，程序会自动进入该向导，完成后继续启动菜单。
 
-`setup` 内置这些 OpenAI 兼容 Chat Completions 供应商：
+## 模型供应商
+
+项目调用 OpenAI 兼容 Chat Completions 接口，不限定只能使用 OpenAI。内置预设如下，实际可用模型名以供应商账户为准：
 
 | 供应商 | 默认 Base URL | 默认模型 |
 | --- | --- | --- |
@@ -59,142 +78,82 @@ http://127.0.0.1:8000/
 | SiliconFlow | `https://api.siliconflow.cn/v1` | `deepseek-ai/DeepSeek-V3` |
 | 自定义 | 用户输入 | 用户输入 |
 
-模型名有默认值，但向导会让用户确认或手动修改。真实模型必须能返回符合 `Action` 模型的 JSON 对象，例如：
+真实模型必须能返回符合 `Action` 模型的 JSON，例如：
 
 ```json
 {"kind":"read_file","path":"README.md"}
 ```
 
-## 配置自检
+`doctor` 会检查 `.env`、URL 格式、模型名、凭据来源、HTTP 请求和 Action JSON。HTTP 401 通常表示 Key 无效，402 通常表示余额问题，404/422 通常表示 URL 或模型名不匹配，429 表示请求受限。
 
-单独运行：
+## CLI 命令
 
-```powershell
-.\.venv\Scripts\python.exe -m fr_harness.cli doctor
+```text
+fr-harness                         启动交互式菜单
+fr-harness run                     启动交互式菜单
+fr-harness demo                    运行离线机制演示
+fr-harness --version               显示版本
+fr-harness setup [--no-start]      交互配置
+fr-harness doctor                  配置与模型自检
+fr-harness serve                   启动可选本地 WebUI
+fr-harness init [--database PATH]  初始化数据库
+fr-harness test                    运行源码测试套件
+fr-harness credential set          保存凭据
+fr-harness credential status       查看凭据状态
+fr-harness credential update       更新凭据
+fr-harness credential clear        清除凭据
 ```
 
-`doctor` 只诊断，不自动修复。检查项包括：
-
-- `.env` 是否存在且可读。
-- `FR_LLM_BASE_URL` 是否配置，并且包含 `http://` 或 `https://`。
-- `FR_LLM_MODEL` 是否配置。
-- API Key 是否能从环境变量或 system keyring 解析。
-- OpenAI 兼容 `/chat/completions` 请求是否成功。
-- 模型是否返回合法 Action JSON。
-
-常见失败：
-
-| 现象 | 含义 | 建议 |
-| --- | --- | --- |
-| `FR_LLM_BASE_URL 缺少 http:// 或 https://` | URL 写成了 `api.deepseek.com` 这类裸域名 | 改成 `https://api.deepseek.com` |
-| HTTP 401 | API Key 无效 | 运行 `credential update` |
-| HTTP 402 | 账户余额不足 | 检查供应商控制台余额 |
-| HTTP 404 / 422 | Base URL 或模型名不匹配 | 检查供应商文档和模型名 |
-| Action JSON 失败 | 模型返回自然语言而不是 JSON | 换用更稳定的模型，或确认供应商支持 JSON mode |
+`test` 与 Agent 的 pytest 工具均使用固定参数数组和 `shell=False`，不接受模型提供的任意命令。pytest 禁用缓存插件，不会在目标项目创建 `.pytest_cache`。
 
 ## 架构
 
 ```text
-WebUI / CLI
-  -> HarnessConfig（TOML + 受控环境覆盖）
-  -> Agent 控制循环
+交互式 CLI / 可选 WebUI
+  -> TaskService（任务创建、恢复、进度和审批协调）
+  -> Agent（手写反馈控制循环）
   -> LLMClient（MockLLM / OpenAICompatibleLLM）
-  -> 护栏分类与 SQLite 审批
-  -> 受限 ToolDispatcher
-       |- UTF-8 文件读取
-       |- UTF-8 文件写入
-       `- 固定命令 python -m pytest -q -p no:cacheprovider
+  -> Guardrails（工作区边界与危险动作分类）
+  -> ToolDispatcher（UTF-8 文件工具 / 固定 pytest）
   -> Feedback / Memory / Audit
   -> SQLite
 
-Credential source: 环境变量优先 -> system keyring
+凭据来源：环境变量优先 -> system keyring
 ```
 
-任务状态通常按以下路径变化：
+任务可在以下状态间变化：
 
 ```text
 created -> running -> pending_approval -> running -> succeeded
-                  |                    |          `-> failed
-                  |                    `-> cancelled（拒绝审批）
+                  |                    |          `-> paused
+                  |                    `-> cancelled
                   `-> failed
 ```
 
-## 核心能力
+核心机制包括：
 
-- 自建 `Agent.run_once()` / `run_until_stopped()` 反馈控制循环。
-- 结构化动作：读文件、写文件、运行 pytest、申请审批、声明完成。
-- 工作区路径约束，防御 `..` 和符号链接逃逸。
-- 覆盖已有文件和运行 pytest 前的持久化人工审批。
-- SQLite 任务、审计、审批和记忆持久化。
-- pytest 失败节点与摘要回灌；只有最近一次 pytest 通过后才允许成功。
-- 最大 8 轮、连续重复动作和阻断动作停止策略。
-- 真实模型请求使用 JSON mode，提高 OpenAI 兼容模型返回 Action JSON 的稳定性。
-- 操作系统 keyring 凭据生命周期和声明式 Agent 规则。
-- 三页 FastAPI WebUI、CLI、GitLab CI 与 Docker 分发。
+- 结构化动作：读取文件、写入文件、运行 pytest、申请审批和声明完成。
+- 工作区路径 `resolve()` 校验，阻断 `..` 和符号链接逃逸。
+- SQLite 持久化任务、审计、审批、任务权限和记忆。
+- 已有文件覆盖采用一次性审批消费，不能重复执行同一批准动作。
+- pytest 失败摘要回灌 LLM，只有最近一次测试通过后才能完成。
+- 最大轮次、重复动作、阻断动作和可恢复网络错误停止策略。
+- 常见 API Key、Token 和 Secret 在持久化或显示前脱敏。
 
-## WebUI
+## 凭据与配置
 
-手动启动：
-
-```powershell
-.\.venv\Scripts\python.exe -m fr_harness.cli serve --host 127.0.0.1 --port 8000
-```
-
-浏览器访问 `http://127.0.0.1:8000/`：
-
-1. 在“新建任务”页填写目标和现存工作区目录。
-2. 在任务详情页查看状态、轮次和转义后的审计 JSON。
-3. 在“待审批”页查看中文操作摘要，批准或拒绝危险动作；原始 Action JSON 会折叠在技术详情里。
-
-首版是单进程同步执行；创建任务的 HTTP 请求会运行到成功、失败或等待审批为止。WebUI 没有登录鉴权，默认建议只监听 `127.0.0.1`。
-
-## CLI
-
-```text
-python -m fr_harness.cli setup [--host HOST] [--port PORT] [--no-start]
-python -m fr_harness.cli doctor
-python -m fr_harness.cli init [--database PATH]
-python -m fr_harness.cli serve [--host HOST] [--port PORT]
-python -m fr_harness.cli test
-python -m fr_harness.cli credential set
-python -m fr_harness.cli credential status
-python -m fr_harness.cli credential update
-python -m fr_harness.cli credential clear
-```
-
-`test` 子命令固定执行当前解释器的 `python -m pytest -v`，不会接受或拼接任意 shell 命令。
-
-## 凭据与 .env
-
-`.env` 只用于非敏感配置：
+`.env` 只保存非敏感配置：
 
 ```env
-FR_DATABASE_PATH=fr_harness.sqlite3
 FR_LLM_BASE_URL=https://api.deepseek.com
 FR_LLM_MODEL=deepseek-v4-flash
 ```
 
-本地交互推荐把 API Key 存入 system keyring：
+环境变量优先于 system keyring。`OPENAI_API_KEY` 适合 CI、Docker 或临时覆盖；不要把真实值写入源码、Git 历史、终端 history 或日志。`.env` 是明文文件，不是 Secret Manager。
 
-```powershell
-.\.venv\Scripts\python.exe -m fr_harness.cli credential set
-.\.venv\Scripts\python.exe -m fr_harness.cli credential status
-```
+Windows 使用 Windows Credential Manager，macOS 使用 Keychain，Linux 需要可用的 Secret Service。容器环境应使用平台 Secret 注入；状态命令只显示来源，不回显凭据。
 
-更新和清除：
-
-```powershell
-.\.venv\Scripts\python.exe -m fr_harness.cli credential update
-.\.venv\Scripts\python.exe -m fr_harness.cli credential clear
-```
-
-Windows 使用 Windows Credential Manager；macOS 使用 Keychain；Linux 需要可用的 Secret Service。状态命令只显示 `environment`、`system keyring` 或未配置，不回显 key。
-
-环境变量优先级高于 system keyring。`OPENAI_API_KEY` 可用于容器、CI 或临时覆盖，但不要把真实 key 写进 Git 历史、日志或终端 history。`.env` 是明文文件，不是秘密保险箱；它可能被本机管理员、恶意进程、备份工具或误配置的同步软件读取。生产环境应优先使用平台 Secret Manager 或短期凭据。
-
-## 声明式 Agent 规则
-
-根目录 `fr-harness.toml` 只保存非秘密规则：
+`fr-harness.toml` 保存非秘密 Agent 规则：
 
 ```toml
 [agent]
@@ -206,124 +165,86 @@ existing_file_write = true
 run_pytest = true
 ```
 
-可用 `FR_CONFIG_PATH` 指向另一份 TOML；`FR_MAX_ITERATIONS`、`FR_MEMORY_LIMIT`、`FR_APPROVE_EXISTING_WRITE`、`FR_APPROVE_PYTEST` 可覆盖对应值。工作区越界始终阻断，不能通过配置关闭。任何 API key 都不得写入 `fr-harness.toml`。
+`FR_CONFIG_PATH` 可指定其他 TOML；`FR_MAX_ITERATIONS`、`FR_MEMORY_LIMIT`、`FR_APPROVE_EXISTING_WRITE` 和 `FR_APPROVE_PYTEST` 可覆盖对应配置。工作区越界始终阻断，不能通过配置关闭。
 
-## 测试与 MockLLM 演示
+## 安全
 
-完整测试：
+- Agent 只能访问任务绑定的工作区；容器应使用最小范围读写挂载。
+- 覆盖已有文件默认逐次审批；CLI 中 pytest 权限仅对当前任务有效。
+- pytest 会执行目标项目的 Python 代码，只应授权可信项目。当前版本没有进程沙箱。
+- 固定测试命令禁用 `.pytest_cache`，并使用 `shell=False`。
+- 审计、记忆、目标和审批内容会脱敏，但脱敏不能替代最小权限与提交前扫描。
+- WebUI 没有登录鉴权，只应监听 `127.0.0.1`，不应直接暴露到不可信网络。
 
-```powershell
-.\.venv\Scripts\python.exe -m pytest -v
-```
+## WebUI（可选）
 
-也可以通过 CLI：
-
-```powershell
-.\.venv\Scripts\python.exe -m fr_harness.cli test
-```
-
-确定性核心机制演示：
+WebUI 作为本地辅助入口保留，不是本次 Release 的主要交付方式：
 
 ```powershell
-.\.venv\Scripts\python.exe demo\mock_repair_demo.py
+fr-harness serve --host 127.0.0.1 --port 8000
 ```
 
-预期输出：
+浏览器访问 `http://127.0.0.1:8000/`。页面提供新建任务、任务详情和待审批操作；审批页默认展示易懂的操作摘要，并把原始 JSON 收进技术详情。
 
-```text
-guardrail approval: PASS
-feedback repair: PASS
-approval one-time use: PASS
+## 测试与 CI
+
+源码全量测试：
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -v -p no:cacheprovider
 ```
 
-演示只使用 `TemporaryDirectory`、临时 pytest 项目、SQLite 和 `MockLLM`，不读取真实 key，也不访问网络。
+兼容课程要求的命令仍可使用：`python -m pytest -v`。
+
+MockLLM 演示：
+
+```powershell
+.\.venv\Scripts\python.exe -m fr_harness.cli demo
+```
+
+`.github/workflows/ci.yml` 在 push 和 PR 上运行单元测试、离线演示、Docker 构建与冷启动；main 通过后发布 GHCR 镜像。`.github/workflows/release.yml` 在 `v*` 标签上使用 Windows runner：运行测试、构建单文件 EXE、验证版本、离线演示与内置 pytest，再上传 ZIP 和 SHA256 到 GitHub Release。
 
 ## Docker
 
-构建镜像：
+源码构建：
 
 ```bash
 docker build -t fr-harness:local .
 ```
 
-公共 GHCR 镜像可匿名拉取：
+公共镜像：
 
 ```bash
 docker pull ghcr.io/rippleorapple/fr-harness:latest
 ```
 
-准备 `.env` 后运行，并同时挂载持久化数据和待修复工作区：
-
-```bash
-docker run --rm \
-  -p 8000:8000 \
-  --env-file .env \
-  -v fr-harness-data:/data \
-  -v /absolute/path/to/project:/workspace/project:rw \
-  fr-harness:local
-```
-
-在 Web 表单中填写容器内路径 `/workspace/project`，而不是宿主机路径。镜像默认把数据库写到 `/data/fr_harness.sqlite3`。
-
-容器不依赖桌面 system keyring。`--env-file .env` 会把明文凭据注入容器进程环境；不要把 `.env` 烘焙进镜像或提交到仓库。有条件时使用容器平台 Secret 的挂载或注入能力。
-
-## 安全模型
-
-- `OPENAI_API_KEY` 不得进入源码、Git 历史、SQLite、审计事件、页面或日志。
-- 本地 key 存入 system keyring；环境变量优先级只用于显式的容器、CI 或运维覆盖。
-- 任务目标、记忆、反馈、动作审计和审批 JSON 在持久化前会对常见 key/token/secret 赋值及 OpenAI 风格 key 做脱敏。
-- 文件路径通过解析后的工作区根目录检查；工作区外访问直接阻断并使任务失败。
-- 读文件和新建文件可直接执行；覆盖已有文件与运行 pytest 默认要求一次性审批。
-- 批准采用 SQLite 条件更新从 `approved` 原子变为 `consumed`，同一动作不会重复执行。
-- pytest 只能使用固定参数数组 `[sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"]`，`shell=False`，并禁用 `.pytest_cache` 写入。
-- WebUI 会 HTML 转义目标与审计 JSON，但首版没有登录鉴权，不应直接暴露到不可信网络。
-
-## 工作区边界
-
-每个任务创建时绑定一个现存目录。文件动作会把相对路径和根目录分别 `resolve()`，只有解析后仍位于根目录内才会执行。因此 `../secret.txt` 和指向工作区外部的符号链接都会被拒绝。
-
-容器中只能选择已挂载进容器的目录。请使用最小范围的读写挂载，不要把整个用户主目录或系统盘作为工作区。
-
-## CI
-
-`.gitlab-ci.yml` 包含两个阶段：
-
-- `unit-test`：在 Python 3.12 镜像中安装 `.[dev]` 并运行 `python -m pytest -v`。
-- `docker-build`：测试通过后使用 Docker-in-Docker 构建提交镜像。
-
-`.github/workflows/ci.yml` 在每次 push 和 PR 运行：
-
-- `unit-test`：Python 3.12 全量测试和 MockLLM 机制演示。
-- `docker-build`：构建镜像、冷启动、HTTP 200 和日志无测试凭据检查。
-- `publish-image`：仅 main 的前两项通过后，发布 `ghcr.io/rippleorapple/fr-harness:latest` 和 commit SHA tag。
-
-GHCR 包发布成功不自动等于“公共镜像”；最终交付还必须把 package visibility 设为 Public，并用未登录的空 Docker 配置匿名拉取验证。
+运行时应挂载数据目录和目标工作区，并通过平台 Secret 或未提交的 env 文件注入配置。容器 WebUI 中填写容器内工作区路径。不要把 `.env` 烘焙进镜像。
 
 ## 项目结构
 
 ```text
 src/fr_harness/
-  agent.py       # 自建控制循环与停止策略
-  cli.py         # setup / doctor / init / serve / test / credential
-  config.py      # TOML 声明式 Agent 规则
-  credentials.py # system keyring 凭据生命周期
-  db.py          # SQLite 任务、事件和审批仓储
-  feedback.py    # pytest 反馈解析
-  guardrails.py  # 路径限制与治理分类
-  llm.py         # MockLLM / OpenAI 兼容客户端
-  memory.py      # 任务记忆和上下文
-  models.py      # Pydantic 领域模型
-  security.py    # 凭据脱敏
-  tools.py       # 受限工具分发
-  web.py         # FastAPI 三页 WebUI
-demo/
-  mock_repair_demo.py
-tests/
-temp/*/          # 每个实施 Task 的 GOAL 与过程记录
-fr-harness.toml
-Dockerfile
-.gitlab-ci.yml
+  agent.py        # Agent 控制循环与停止策略
+  app_paths.py    # 源码和冻结程序运行路径
+  cli.py          # CLI 命令与交互入口
+  console.py      # 中文菜单、审批 diff 与进度显示
+  task_service.py # 任务协调和恢复
+  config.py       # TOML 规则
+  credentials.py  # system keyring 凭据生命周期
+  db.py           # SQLite 仓储与迁移
+  demo.py         # 可打包的离线演示
+  feedback.py     # pytest 反馈解析
+  guardrails.py   # 路径与动作治理
+  llm.py          # MockLLM / OpenAI 兼容客户端
+  memory.py       # 记忆与上下文
+  models.py       # Pydantic 领域模型
+  security.py     # 脱敏
+  tools.py        # 受限工具
+  web.py          # 本地 FastAPI WebUI
 .github/workflows/ci.yml
+.github/workflows/release.yml
+fr-harness.spec
+Dockerfile
 SPEC.md
 PLAN.md
 SPEC_PROCESS.md
@@ -333,13 +254,13 @@ REFLECTION.md
 
 ## 已知限制
 
-- 只支持 Python 项目，并只把 pytest 作为客观反馈信号。
-- 单进程、单任务同步执行，没有后台 worker、任务队列或并发控制。
-- 没有多 Agent、向量检索、IDE 插件、用户认证或生产级权限系统。
-- 真实模型必须可靠地产生结构化 Action JSON；首版没有宽松的自然语言解析器。
-- 凭据脱敏是防御层，不替代 Secret Manager、最小权限和提交前扫描。
-- 批准消费保证危险动作“至多一次”；SQLite 状态与文件系统副作用无法构成跨系统原子事务。
+- 只支持 Python 项目，客观反馈信号固定为 pytest。
+- 单进程执行，没有后台 worker、多任务并发或跨机器调度。
+- 没有多 Agent、IDE 插件、用户认证或生产级权限系统。
+- 真实模型必须稳定返回结构化 Action JSON。
+- SQLite 状态与文件系统副作用不构成跨系统原子事务；一次性消费保证危险动作至多执行一次。
+- Windows Release 当前只提供 x64 构建。
 
 ## 课程过程文件
 
-`SPEC.md`、`PLAN.md` 和 `SPEC_PROCESS.md` 记录需求、实施计划和陌生 Agent 冷启动验证；`AGENT_LOG.md` 与 `temp/task-*/` 记录实现证据。`REFLECTION.md` 的最终个人反思必须由学生根据真实过程自行撰写。
+`SPEC.md`、`PLAN.md` 和 `SPEC_PROCESS.md` 记录需求、实现计划、规格迭代和冷启动验证；`AGENT_LOG.md` 与 `temp/` 记录真实实施证据。`REFLECTION.md` 只保留学生个人反思的要求和写作检查项，正文必须由学生根据真实经历自行完成。

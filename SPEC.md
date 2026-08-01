@@ -1,7 +1,7 @@
 # FR-Harness 设计规约
 
 **日期：** 2026-07-17  
-**状态：** 已批准；补救实施中  
+**状态：** 已实现；v1.0.0 发布候选已通过本地验收
 **项目类型：** AI4SE A 路线——Coding Agent Harness
 
 ## 1. 问题陈述
@@ -18,7 +18,7 @@ FR-Harness 面向希望让 LLM 在本地 Python 项目中执行小型修复、�
 
 ### 1.2 范围
 
-首版支持单进程、单任务、Python + `pytest`、FastAPI 极简 WebUI、SQLite、CLI、OpenAI 兼容 API、MockLLM、Docker 与 CI。不包含多 Agent、后台队列、任意 shell、IDE 插件、用户认证、多租户或语义向量检索。
+首版支持单进程、单任务、Python + `pytest`、中文交互式 CLI、可选 FastAPI 本地 WebUI、SQLite、OpenAI 兼容 API、MockLLM、Windows x64 单文件 Release、Docker 与 CI。不包含多 Agent、后台队列、任意 shell、IDE 插件、用户认证、多租户或语义向量检索。
 
 ## 2. 用户故事
 
@@ -46,6 +46,10 @@ FR-Harness 面向希望让 LLM 在本地 Python 项目中执行小型修复、�
 
 作为评审者，我希望一条命令运行 MockLLM 单元测试和机制演示，不依赖网络或付费 API，以客观复查项目确实自行编码了 Harness。
 
+### US-7：下载即用的 CLI
+
+作为课程评审者，我希望从 GitHub Release 下载 Windows x64 ZIP 后无需安装 Python，即可启动中文菜单、运行离线演示并对目标项目执行 pytest。
+
 ## 3. 功能规约
 
 ### 3.1 模块契约
@@ -62,8 +66,12 @@ FR-Harness 面向希望让 LLM 在本地 Python 项目中执行小型修复、�
 | `agent.py` | Database、LLM、配置、工具 | 手写控制循环、停机和恢复 | 新任务状态 | 默认最多 8 轮；重复动作停止 | 异常转成脱敏失败事件 |
 | `credentials.py` | keyring backend、环境 | 安全读写 key，环境变量优先解析 | key 或配置来源 | 不写数据库/配置/日志 | 后端异常转成固定通用错误 |
 | `config.py` | TOML 与允许的环境覆盖 | 加载非秘密声明式规则 | `HarnessConfig` | 正数范围、安全审批默认 | 非法值快速失败 |
+| `app_paths.py` | 环境与冻结状态 | 统一解析 env、TOML、SQLite 和日志目录 | `RuntimePaths` | EXE 使用 LocalAppData | 目录缺失时创建默认配置 |
+| `task_service.py` | Task、LLM、审批回调 | 逐轮驱动 Agent、发出事件并恢复任务 | 更新后的 `Task` | pytest 权限仅限单任务 | 终态任务拒绝恢复 |
+| `console.py` | 用户输入与任务事件 | 中文菜单、diff、日志和历史恢复 | 退出码与可读进度 | 不直接显示原始 JSON | 中断保存为 paused |
 | `web.py` | HTTP 表单与审批决定 | 创建任务、显示转义日志、恢复审批 | HTML/303/4xx | 工作区必须是现存目录 | 400/404/409，不显示秘密 |
-| `cli.py` | init/serve/test/credential 参数 | 初始化、启动、测试和 key 生命周期 | 退出码与非秘密提示 | 测试命令固定，录入隐藏 | 配置缺失返回 2 |
+| `cli.py` | run/demo/setup/doctor/serve 等参数 | 启动交互菜单、配置、自检、演示和 WebUI | 退出码与非秘密提示 | 测试命令固定，录入隐藏 | 配置缺失自动进入向导 |
+| `demo.py` | 无外部输入 | 用 MockLLM 和确定性反馈验证四项机制 | 四项 PASS/FAIL | 不读取凭据、不访问网络 | 任一检查失败返回 1 |
 
 ### 3.2 规范性领域接口
 
@@ -79,6 +87,11 @@ FR-Harness 面向希望让 LLM 在本地 Python 项目中执行小型修复、�
 ### 3.3 CLI
 
 ```text
+python -m fr_harness.cli
+python -m fr_harness.cli run
+python -m fr_harness.cli demo
+python -m fr_harness.cli setup [--no-start]
+python -m fr_harness.cli doctor
 python -m fr_harness.cli init [--database PATH]
 python -m fr_harness.cli serve [--host HOST] [--port PORT]
 python -m fr_harness.cli test
@@ -88,7 +101,7 @@ python -m fr_harness.cli credential update
 python -m fr_harness.cli credential clear
 ```
 
-`set` 不覆盖已有 keyring 值；`update` 要求已有值；`clear` 幂等；`status` 只显示来源和是否配置。`serve` 先要求 endpoint 和 model，再按环境变量、keyring 顺序解析 key；交互式首次运行可隐藏录入，非交互环境给出命令提示。
+无参数和 `run` 启动持续中文菜单；配置缺失时自动进入 `setup`，完成后继续。每个任务单独授权 pytest，覆盖已有文件仍逐次审批。`set` 不覆盖已有 keyring 值；`update` 要求已有值；`clear` 幂等；`status` 只显示来源和是否配置。`serve` 按环境变量、keyring 顺序解析 key。
 
 ## 4. 非功能性需求
 
@@ -102,15 +115,15 @@ python -m fr_harness.cli credential clear
 
 - key 不得进入源码、Git 历史、SQLite、审计、响应、日志或终端 history。
 - 文件操作必须通过解析后的工作区边界。
-- pytest 使用参数数组 `[sys.executable, "-m", "pytest", "-q"]` 且 `shell=False`。
+- 源码模式 pytest 使用参数数组 `[sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"]`；冻结 EXE 使用内置固定 `_pytest` 入口；两者均为 `shell=False`。
 - 危险动作必须经持久化、一次性人工审批。
 - 所有用户可见 HTML 和 JSON 文本进行脱敏/转义。
 
 ### 4.3 可用性
 
-- 本地 CLI 在缺少 key 时给出下一条可执行命令。
-- README 同时给出源码安装、Docker 获取、工作区挂载和凭据配置。
-- Mock 演示无需网络，在临时目录内自清理。
+- 本地 CLI 缺少配置时自动进入中文向导，并可从历史任务恢复等待审批或暂停状态。
+- README 以 GitHub Release 为主要交付，同时给出源码安装、Docker、工作区和凭据说明。
+- Mock 演示无需网络，在临时目录内自清理；Windows x64 Release 无需预装 Python。
 
 ### 4.4 可观测性
 
@@ -122,14 +135,15 @@ python -m fr_harness.cli credential clear
 
 - Python 3.12 或更高；开发验证覆盖 Windows，容器目标为 Linux amd64/arm64 兼容的 `python:3.12-slim` 用户空间。
 - keyring 使用操作系统可用后端；无桌面 keyring 的 Docker/CI 使用环境变量或平台 Secret。
+- PyInstaller Release 目标为 Windows x64；冻结程序把数据存入 LocalAppData，并内置 pytest 运行时。
 
 ## 5. 系统架构
 
 ```text
-CLI / FastAPI WebUI
+Interactive CLI / optional FastAPI WebUI
         |
         v
-  Agent handwritten loop ---- HarnessConfig
+  TaskService ---- Agent handwritten loop ---- HarnessConfig
         |
         +---- LLMClient ---- MockLLM / OpenAI compatible endpoint
         |
@@ -142,7 +156,7 @@ CLI / FastAPI WebUI
                             SQLite
 
 Credential source: process environment -> OS keyring
-Distribution: GitHub -> Actions -> GHCR Docker image
+Distribution: GitHub -> Actions -> Windows Release + GHCR Docker image
 ```
 
 外部依赖只有 OpenAI 兼容 Chat Completions 服务、操作系统 keyring、pytest 与 Docker/GitHub 基础设施。核心离线测试不访问这些外部网络服务。
@@ -151,6 +165,7 @@ Distribution: GitHub -> Actions -> GHCR Docker image
 
 ```text
 created -> running -> pending_approval -> running -> succeeded
+                  |                    |          -> paused
                   |                    |          -> failed
                   |                    -> cancelled
                   -> failed
@@ -160,14 +175,14 @@ created -> running -> pending_approval -> running -> succeeded
 
 | 实体 | 主要字段 | 关系与约束 |
 |---|---|---|
-| Task | id UUID、goal、workspace、status、iteration | 工作区为解析后的绝对路径；iteration 非负 |
+| Task | id UUID、goal、workspace、status、iteration、pytest_allowed | 工作区为解析后的绝对路径；pytest 权限不跨任务 |
 | Event | id、task_id、kind、payload、created_at | 归属 Task；按 id 追加读取；payload 为脱敏 JSON |
 | Approval | id UUID、task_id、action_json、decision、created_at | decision 为 pending/approved/rejected/consumed；approved 仅能原子消费一次 |
 | MemoryEntry | id、task_id、category、content、created_at | 归属 Task；内容写入前脱敏 |
 | Action | kind、path、content、reason | kind 决定必需字段；不会独立持久化秘密 |
 | Feedback | passed、summary、failed_tests | passed 仅由 pytest 退出码决定 |
 
-SQLite 表为 `tasks`、`events`、`approvals`、`memory_entries`。首版不做 schema migration 框架和跨数据库支持。
+SQLite 表为 `tasks`、`events`、`approvals`、`memory_entries`。首版提供 `pytest_allowed` 的幂等列迁移，不做通用 migration 框架和跨数据库支持。
 
 ## 7. 凭据与分发设计
 
@@ -198,6 +213,7 @@ SQLite 表为 `tasks`、`events`、`approvals`、`memory_entries`。首版不做
 ### 7.3 分发
 
 - 源码：公开 GitHub 仓库。
+- 主要课程交付：GitHub `v1.0.0` Release，包含 Windows x64 ZIP、单文件 EXE、中文快速开始、启动脚本和 SHA256。
 - 容器：`ghcr.io/rippleorapple/fr-harness:latest`，由 main 分支 GitHub Actions 发布；公共性必须以匿名拉取验证。
 - 本地构建：`docker build -t fr-harness:local .`。
 - 运行需要挂载 `/data` 和最小范围工作区，并通过环境变量/平台 Secret 提供真实模型配置。
@@ -214,6 +230,7 @@ SQLite 表为 `tasks`、`events`、`approvals`、`memory_entries`。首版不做
 | MockLLM | 使控制循环和机制完全离线、确定性测试 |
 | keyring | 跨平台连接系统安全存储，不自造密码学 |
 | Docker + GHCR | 单一可复现运行形态，公开 registry 与 GitHub CI 集成直接 |
+| PyInstaller | 生成无需安装 Python 的 Windows x64 单文件 CLI，适合 Release 链接验收 |
 | GitHub Actions + GitLab CI 文件 | GitHub 仓库获得真实 CI；同时满足课程最终清单的 `unit-test` job |
 
 WebUI 仅为服务器渲染的极简管理页，不做视觉创作或组件系统，因此豁免 Open Design；安全与机制优先。
@@ -227,10 +244,12 @@ WebUI 仅为服务器渲染的极简管理页，不做视觉创作或组件系�
 | 凭据生命周期 | fake keyring 下 set/status/update/clear，输出无秘密 | `tests/test_credentials.py` |
 | 记忆与上下文 | task 隔离、limit、固定消息顺序、脱敏 | `tests/test_memory.py` |
 | WebUI | 创建、详情转义、审批/拒绝路由 | `tests/test_web.py` |
-| 机制演示 | 输出恰好三行 PASS，离线临时运行 | `demo/mock_repair_demo.py`、`tests/test_demo.py` |
+| 机制演示 | 输出恰好四行 PASS，离线临时运行 | `demo/mock_repair_demo.py`、`tests/test_demo.py` |
+| 交互 CLI | 主菜单、新任务、diff 审批、历史恢复均可测试 | `tests/test_console.py`、`tests/test_task_service.py` |
+| Windows EXE | 版本、演示、独立项目 pytest 均通过 | `tests/test_release.py`、Release workflow |
 | 一键测试 | `python -m pytest -v` 全部通过 | 本地与 GitHub Actions run |
 | 容器 | build、冷启动、HTTP 200、日志无测试 key | Docker 命令与 CI `docker-build` |
-| 分发 | main 发布 GHCR，空 Docker 配置可匿名 pull | Actions run 与匿名拉取记录 |
+| 分发 | main 发布 GHCR；标签发布 Windows ZIP 与 SHA256 | Actions run、匿名拉取与 Release 附件 |
 | 文档 | SPEC/PLAN/过程/README 与实现一致 | `tests/test_course_documents.py`、人工 review |
 
 ## 10. 风险与未决问题
