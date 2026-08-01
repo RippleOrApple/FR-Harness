@@ -83,14 +83,14 @@
 - 产出：`TaskService.resume(task_id: UUID, approve: ApprovalHandler, on_events: EventHandler) -> Task`
 - 产出：`TaskService.list_tasks() -> list[Task]`
 
-- [ ] 先写失败测试：创建任务保存 pytest 权限；已授权任务运行 pytest 不产生 pytest 审批，但已有文件覆盖仍产生审批。
-- [ ] 运行 `python -m pytest tests/test_task_service.py -v`，确认模块缺失失败。
-- [ ] 实现 TaskService，按任务权限复制配置，仅关闭该任务的 pytest 动作审批。
-- [ ] 逐轮调用 `Agent.run_once()`，把每轮新增审计事件交给 `on_events`。
-- [ ] 实现文件审批回调和恢复逻辑，拒绝后保持取消状态。
-- [ ] 增加测试：等待审批、paused 可恢复；成功、失败、取消不可恢复；已消费写入不重复。
-- [ ] 运行目标测试并确认通过。
-- [ ] 提交 `feat: add interactive task service`。
+- [x] 先写失败测试：创建任务保存 pytest 权限；已授权任务运行 pytest 不产生 pytest 审批，但已有文件覆盖仍产生审批。
+- [x] 运行 `python -m pytest tests/test_task_service.py -v`，确认模块缺失失败。
+- [x] 实现 TaskService，按任务权限复制配置，仅关闭该任务的 pytest 动作审批。
+- [x] 逐轮调用 `Agent.run_once()`，把每轮新增审计事件交给 `on_events`。
+- [x] 实现文件审批回调和恢复逻辑，拒绝后保持取消状态。
+- [x] 增加测试：等待审批、paused 可恢复；成功、失败、取消不可恢复；已消费写入不重复。
+- [x] 运行目标测试并确认通过。
+- [x] 提交 `feat: add interactive task service`。
 
 ### Task 4：中文交互控制台
 

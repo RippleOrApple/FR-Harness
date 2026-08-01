@@ -110,14 +110,18 @@ class Database:
             ).fetchone()
         if row is None:
             raise KeyError(f"unknown task: {task_id}")
-        return Task(
-            id=UUID(row["id"]),
-            goal=row["goal"],
-            workspace=Path(row["workspace"]),
-            status=TaskStatus(row["status"]),
-            iteration=row["iteration"],
-            pytest_allowed=bool(row["pytest_allowed"]),
-        )
+        return self._task_from_row(row)
+
+    def list_tasks(self) -> list[Task]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT id, goal, workspace, status, iteration, pytest_allowed
+                FROM tasks
+                ORDER BY rowid DESC
+                """
+            ).fetchall()
+        return [self._task_from_row(row) for row in rows]
 
     def update_task(self, task: Task) -> None:
         with self._connect() as connection:
@@ -339,4 +343,15 @@ class Database:
             action=Action.model_validate_json(row["action_json"]),
             decision=ApprovalDecision(row["decision"]),
             created_at=row["created_at"],
+        )
+
+    @staticmethod
+    def _task_from_row(row: sqlite3.Row) -> Task:
+        return Task(
+            id=UUID(row["id"]),
+            goal=row["goal"],
+            workspace=Path(row["workspace"]),
+            status=TaskStatus(row["status"]),
+            iteration=row["iteration"],
+            pytest_allowed=bool(row["pytest_allowed"]),
         )
