@@ -210,3 +210,12 @@ Chronological records of skills, context, subagent work, human interventions, an
 - **Docker 网络问题：** 标准 Dockerfile 两次卡在 Docker Hub OAuth token 连接超时。该失败发生在读取基础镜像元数据之前，不归因于仓库代码。
 - **新增发现：** `pytest` 原先只在 dev extra，普通 `pip install .` 和 Docker 镜像不保证有核心测试工具。先增加失败的运行时依赖测试，再把 pytest 移入项目 dependencies。
 - **离线容器复核：** 使用本机已有的已验证 FR-Harness 镜像作基础层，复制并安装当前源码。当前候选镜像返回 HTTP 200、包含 pytest 9.1.1，日志中测试凭据匹配数为 0；标准 Dockerfile 仍由 GitHub CI 在可联网 runner 上重新构建。
+
+## 2026-08-01：PR #7、main CI 与 v1.0.0 Release
+
+- **PR：** `agent/cli-release` 创建 [PR #7](https://github.com/RippleOrApple/FR-Harness/pull/7)。push 与 pull_request 两组 `unit-test`、`docker-build` 全部 success，`publish-image` 在非 main 上按条件 skipped。
+- **合并：** PR #7 以 merge commit `73ceaf8` 合入 main；main CI run `30702122040` 完成且 conclusion 为 success。
+- **Release：** 在该 main 提交创建 `v1.0.0` 标签。Windows Release run `30702181535` 的测试、PyInstaller 构建、EXE 版本、四项 demo、独立项目 pytest、打包、artifact 和 Release 发布步骤全部 success。
+- **公开交付：** [FR-Harness v1.0.0](https://github.com/RippleOrApple/FR-Harness/releases/tag/v1.0.0) 不是 draft 或 prerelease，包含 Windows x64 ZIP 与 SHA256 两个附件。
+- **匿名验证：** 未使用 GitHub API 凭据的普通 HTTPS 下载成功；ZIP 为 19,454,029 字节，SHA256 与附件校验文件一致。解压后包含 EXE、中文启动脚本和快速开始；下载后的 EXE 显示 1.0.0，四项演示全部 PASS。
+- **Node 提示：** workflow 仅报告 GitHub Actions 的 Node.js 20 弃用提醒，没有项目测试或构建失败；后续可随官方 action 主版本升级处理。
