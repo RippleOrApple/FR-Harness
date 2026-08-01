@@ -38,3 +38,19 @@ def test_source_runtime_paths_default_to_current_directory(
     paths = RuntimePaths.from_environment(frozen=False)
 
     assert paths.root == tmp_path.resolve()
+
+
+def test_ensure_creates_a_default_configuration(tmp_path: Path) -> None:
+    paths = RuntimePaths(
+        root=tmp_path,
+        env_file=tmp_path / ".env",
+        config_file=tmp_path / "fr-harness.toml",
+        database_file=tmp_path / "fr_harness.sqlite3",
+        log_dir=tmp_path / "logs",
+    )
+
+    paths.ensure()
+
+    text = paths.config_file.read_text(encoding="utf-8")
+    assert "[agent]" in text
+    assert "[approvals]" in text

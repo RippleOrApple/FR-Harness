@@ -6,9 +6,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "demo" / "mock_repair_demo.py"
 EXPECTED_LINES = [
-    "guardrail approval: PASS",
-    "feedback repair: PASS",
-    "approval one-time use: PASS",
+    "危险操作审批：PASS",
+    "失败反馈纠错：PASS",
+    "一次性文件审批：PASS",
+    "任务级 pytest 权限：PASS",
 ]
 
 
@@ -29,8 +30,8 @@ def test_mock_repair_demo_prints_exact_pass_lines() -> None:
     assert completed.stderr == ""
 
 
-def test_demo_source_is_offline_and_temporary() -> None:
-    source = SCRIPT.read_text(encoding="utf-8") if SCRIPT.exists() else ""
+def test_packaged_demo_is_offline_and_temporary() -> None:
+    source = (ROOT / "src" / "fr_harness" / "demo.py").read_text(encoding="utf-8")
 
     assert "TemporaryDirectory" in source
     assert "MockLLM" in source

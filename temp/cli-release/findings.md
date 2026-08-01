@@ -32,10 +32,11 @@
 | `ToolResult.details` 保存脱敏前的原始测试输出，再由 Agent 脱敏持久化 | LLM 摘要和用户日志分离 |
 | 标准库 `difflib.unified_diff` | 无新增运行依赖，输出可测试 |
 | PyInstaller 作为 dev 依赖 | 仅构建 Release，不增加普通运行依赖 |
+| 默认配置内容嵌入应用并在首次运行生成 | 单文件 EXE 不依赖旁边存在 TOML 文件 |
+| `FR_CONFIG_PATH` 保持高于运行目录默认值 | 保留自动化与高级用户显式覆盖能力 |
 
 ## 资源
 
 - 设计：`temp/2026-08-01-cli-release-design.md`
 - 实施计划：`temp/2026-08-01-cli-release-implementation-plan.md`
 - 课程规格：`SPEC.md`、`PLAN.md`、`SPEC_PROCESS.md`
-

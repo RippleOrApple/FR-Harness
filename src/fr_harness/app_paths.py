@@ -4,6 +4,16 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+DEFAULT_CONFIG = """[agent]
+max_iterations = 8
+memory_limit = 5
+
+[approvals]
+existing_file_write = true
+run_pytest = true
+"""
+
+
 @dataclass(frozen=True)
 class RuntimePaths:
     root: Path
@@ -35,3 +45,5 @@ class RuntimePaths:
     def ensure(self) -> None:
         self.root.mkdir(parents=True, exist_ok=True)
         self.log_dir.mkdir(parents=True, exist_ok=True)
+        if not self.config_file.exists():
+            self.config_file.write_text(DEFAULT_CONFIG, encoding="utf-8")

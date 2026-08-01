@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from fr_harness import cli
+from fr_harness.app_paths import RuntimePaths
 from fr_harness.models import Action, ActionKind
 
 
@@ -88,6 +89,47 @@ def test_test_command_uses_fixed_pytest_command(
     assert cli.main(["test"]) == 0
     assert observed["command"] == [sys.executable, "-m", "pytest", "-v"]
     assert observed["shell"] is False
+
+
+def test_no_arguments_and_run_command_start_interactive_console(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[Path] = []
+    paths = RuntimePaths(
+        root=tmp_path,
+        env_file=tmp_path / ".env",
+        config_file=tmp_path / "fr-harness.toml",
+        database_file=tmp_path / "fr_harness.sqlite3",
+        log_dir=tmp_path / "logs",
+    )
+    monkeypatch.setattr(
+        cli,
+        "_interactive",
+        lambda runtime_paths, store: calls.append(runtime_paths.root) or 0,
+    )
+
+    assert cli.main([], runtime_paths=paths, credential_store=FakeCredentialStore()) == 0
+    assert cli.main(["run"], runtime_paths=paths, credential_store=FakeCredentialStore()) == 0
+    assert calls == [tmp_path, tmp_path]
+
+
+def test_demo_command_runs_without_loading_credentials(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    paths = RuntimePaths(
+        root=tmp_path,
+        env_file=tmp_path / ".env",
+        config_file=tmp_path / "fr-harness.toml",
+        database_file=tmp_path / "fr_harness.sqlite3",
+        log_dir=tmp_path / "logs",
+    )
+    monkeypatch.setattr(cli, "run_demo", lambda: calls.append("demo") or 0)
+
+    assert cli.main(["demo"], runtime_paths=paths) == 0
+    assert calls == ["demo"]
 
 
 class FakeCredentialStore:
@@ -201,7 +243,7 @@ def test_setup_existing_env_and_keyring_can_decline_overwrite_or_key_update(
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(cli, "_prompt", lambda prompt: next(answers))
     monkeypatch.setattr(cli, "_start_server_in_new_terminal", lambda host, port: True)
-    monkeypatch.setattr(cli, "_run_doctor", lambda store: 0)
+    monkeypatch.setattr(cli, "_run_doctor", lambda store, env_path: 0)
     monkeypatch.setattr(cli, "_is_port_available", lambda host, port: True)
 
     store = FakeCredentialStore(existing="old-secret")

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fr-harness"
-version = "0.1.0"
+version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
@@ -17,6 +17,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.3"]
+
+[project.scripts]
+fr-harness = "fr_harness.cli:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

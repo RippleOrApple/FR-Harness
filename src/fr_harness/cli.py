@@ -13,17 +13,23 @@ import uvicorn
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
+from fr_harness.app_paths import RuntimePaths
 from fr_harness.config import load_config
+from fr_harness.console import InteractiveConsole
 from fr_harness.credentials import (
     CredentialStore,
     CredentialStoreError,
     resolve_api_key,
 )
 from fr_harness.db import Database
+from fr_harness.demo import run_demo
 from fr_harness.llm import OpenAICompatibleLLM
 from fr_harness.memory import build_context
+from fr_harness.task_service import TaskService
 from fr_harness.web import create_app
 
+
+VERSION = "1.0.0"
 
 MANAGED_ENV_KEYS = {
     "FR_DATABASE_PATH",
@@ -51,8 +57,15 @@ PROVIDER_PRESETS = {
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="fr-harness")
-    subcommands = parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser(
+        prog="fr-harness",
+        description="FR-Harness 安全编程 Agent",
+    )
+    parser.add_argument("--version", action="version", version=f"FR-Harness {VERSION}")
+    subcommands = parser.add_subparsers(dest="command")
+
+    subcommands.add_parser("run", help="启动交互式修复任务菜单")
+    subcommands.add_parser("demo", help="运行无需网络和 API Key 的离线演示")
 
     init_parser = subcommands.add_parser("init", help="initialize the SQLite database")
     init_parser.add_argument("--database", type=Path)
@@ -85,10 +98,15 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _database_path(explicit: Path | None = None) -> Path:
+def _database_path(
+    explicit: Path | None = None, *, default: Path | None = None
+) -> Path:
     if explicit is not None:
         return explicit.expanduser()
-    return Path(os.environ.get("FR_DATABASE_PATH", "fr_harness.sqlite3")).expanduser()
+    configured = os.environ.get("FR_DATABASE_PATH")
+    if configured:
+        return Path(configured).expanduser()
+    return default or Path("fr_harness.sqlite3")
 
 
 def _init(database_path: Path) -> int:
@@ -211,13 +229,13 @@ def _safe_response_text(error: httpx.HTTPStatusError) -> str:
     return text
 
 
-def _run_doctor(store: CredentialStore) -> int:
-    load_dotenv(Path(".env"), override=True)
+def _run_doctor(store: CredentialStore, env_path: Path = Path(".env")) -> int:
+    load_dotenv(env_path, override=True)
     base_url = os.environ.get("FR_LLM_BASE_URL", "").strip()
     model = os.environ.get("FR_LLM_MODEL", "").strip()
     print("FR-Harness 配置自检")
 
-    if not Path(".env").exists():
+    if not env_path.exists():
         print("[失败] 未找到 .env。请先运行 setup。")
         return 2
     print(".env：OK")
@@ -281,7 +299,15 @@ def _run_doctor(store: CredentialStore) -> int:
     return 0
 
 
-def _setup(host: str, port: int, no_start: bool, store: CredentialStore) -> int:
+def _setup(
+    host: str,
+    port: int,
+    no_start: bool,
+    store: CredentialStore,
+    runtime_paths: RuntimePaths | None = None,
+) -> int:
+    paths = runtime_paths or RuntimePaths.from_environment()
+    paths.ensure()
     try:
         _, label, default_base_url, default_model = _select_provider()
     except ValueError:
@@ -294,9 +320,8 @@ def _setup(host: str, port: int, no_start: bool, store: CredentialStore) -> int:
         base_url = _prompt("Base URL: ").strip()
         model = _prompt("模型名: ").strip()
 
-    env_path = Path(".env")
+    env_path = paths.env_file
     env_values = {
-        "FR_DATABASE_PATH": str(_database_path()),
         "FR_LLM_BASE_URL": base_url,
         "FR_LLM_MODEL": model,
     }
@@ -335,15 +360,15 @@ def _setup(host: str, port: int, no_start: bool, store: CredentialStore) -> int:
         print(str(error), file=sys.stderr)
         return 2
 
-    database_path = _database_path()
+    database_path = _database_path(default=paths.database_file)
     _init(database_path)
-    doctor_result = _run_doctor(store)
+    doctor_result = _run_doctor(store, env_path)
     if doctor_result != 0:
         print("自检失败，未启动 WebUI。")
         return doctor_result
     if no_start:
         print("配置完成。")
-        print("启动 WebUI：python -m fr_harness.cli serve --host 127.0.0.1 --port 8000")
+        print("启动交互模式：fr-harness run")
         return 0
 
     selected_port = _select_available_port(host, port)
@@ -414,7 +439,14 @@ def _credential(command: str, store: CredentialStore) -> int:
         return 2
 
 
-def _serve(host: str, port: int, store: CredentialStore) -> int:
+def _serve(
+    host: str,
+    port: int,
+    store: CredentialStore,
+    runtime_paths: RuntimePaths | None = None,
+) -> int:
+    paths = runtime_paths or RuntimePaths.from_environment()
+    paths.ensure()
     base_url = os.environ.get("FR_LLM_BASE_URL")
     model = os.environ.get("FR_LLM_MODEL")
     if not base_url or not model:
@@ -438,10 +470,13 @@ def _serve(host: str, port: int, store: CredentialStore) -> int:
         print(str(error), file=sys.stderr)
         return 2
 
-    database_path = _database_path()
+    database_path = _database_path(default=paths.database_file)
     database_path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        config = load_config()
+        configured_path = os.environ.get("FR_CONFIG_PATH")
+        config = load_config(
+            Path(configured_path).expanduser() if configured_path else paths.config_file
+        )
     except FileNotFoundError:
         print("agent configuration file was not found", file=sys.stderr)
         return 2
@@ -470,34 +505,99 @@ def _test() -> int:
     return completed.returncode
 
 
+def _configuration_is_complete(paths: RuntimePaths, store: CredentialStore) -> bool:
+    load_dotenv(paths.env_file, override=True)
+    if not os.environ.get("FR_LLM_BASE_URL") or not os.environ.get("FR_LLM_MODEL"):
+        return False
+    try:
+        api_key, _ = resolve_api_key(store)
+    except (CredentialStoreError, ValueError):
+        return False
+    return api_key is not None
+
+
+def _build_task_service(paths: RuntimePaths, store: CredentialStore) -> TaskService:
+    load_dotenv(paths.env_file, override=True)
+    base_url = os.environ.get("FR_LLM_BASE_URL", "").strip()
+    model = os.environ.get("FR_LLM_MODEL", "").strip()
+    api_key, _ = resolve_api_key(store)
+    if not base_url or not model or api_key is None:
+        raise ValueError("模型配置不完整")
+    database = Database(_database_path(default=paths.database_file))
+    database.initialize()
+    configured_path = os.environ.get("FR_CONFIG_PATH")
+    config = load_config(
+        Path(configured_path).expanduser() if configured_path else paths.config_file
+    )
+    llm = OpenAICompatibleLLM(base_url=base_url, model=model, api_key=api_key)
+    return TaskService(database, llm, config=config)
+
+
+def _interactive(paths: RuntimePaths, store: CredentialStore) -> int:
+    paths.ensure()
+    if not _configuration_is_complete(paths, store):
+        print("首次使用需要先完成模型配置。")
+        result = _setup("127.0.0.1", 8000, True, store, paths)
+        if result != 0:
+            return result
+
+    try:
+        service = _build_task_service(paths, store)
+    except (CredentialStoreError, OSError, ValueError, ValidationError) as error:
+        print(f"配置加载失败：{error}", file=sys.stderr)
+        return 2
+
+    console: InteractiveConsole
+
+    def configure() -> None:
+        nonlocal service
+        result = _setup("127.0.0.1", 8000, True, store, paths)
+        if result == 0:
+            service = _build_task_service(paths, store)
+            console.service = service
+
+    console = InteractiveConsole(service, configure=configure)
+    return console.run()
+
+
 def main(
     argv: Sequence[str] | None = None,
     *,
     credential_store: CredentialStore | None = None,
+    runtime_paths: RuntimePaths | None = None,
 ) -> int:
-    load_dotenv(Path(".env"))
+    paths = runtime_paths or RuntimePaths.from_environment()
+    paths.ensure()
+    load_dotenv(paths.env_file)
     args = _parser().parse_args(argv)
+    store = credential_store or CredentialStore()
+    if args.command in {None, "run"}:
+        return _interactive(paths, store)
+    if args.command == "demo":
+        return run_demo()
     if args.command == "init":
-        return _init(_database_path(args.database))
+        return _init(_database_path(args.database, default=paths.database_file))
     if args.command == "serve":
         return _serve(
             args.host,
             args.port,
-            credential_store or CredentialStore(),
+            store,
+            paths,
         )
     if args.command == "setup":
         return _setup(
             args.host,
             args.port,
             args.no_start,
-            credential_store or CredentialStore(),
+            store,
+            paths,
         )
     if args.command == "doctor":
-        return _run_doctor(credential_store or CredentialStore())
+        return _run_doctor(store, paths.env_file)
     if args.command == "credential":
         return _credential(
             args.credential_command,
-            credential_store or CredentialStore(),
+            store,
         )
     return _test()
 
