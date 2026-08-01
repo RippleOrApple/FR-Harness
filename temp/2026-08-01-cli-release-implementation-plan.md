@@ -36,16 +36,16 @@
 - 产出：`Database.set_pytest_allowed(task_id: UUID, allowed: bool) -> Task`
 - 产出：`TaskStatus.PAUSED`、`Task.pytest_allowed: bool`
 
-- [ ] 先写失败测试：环境变量覆盖数据目录，冻结模式使用 `LOCALAPPDATA/FR-Harness`，源码模式使用当前目录。
-- [ ] 运行 `python -m pytest tests/test_app_paths.py -v`，确认因模块缺失失败。
-- [ ] 实现不可变 `RuntimePaths`，包含 `root`、`env_file`、`config_file`、`database_file`、`log_dir`，并提供幂等目录创建。
-- [ ] 运行目标测试并确认通过。
-- [ ] 先写失败测试：旧数据库初始化后自动增加 `pytest_allowed`，任务可切换权限并读取；`paused` 可持久化。
-- [ ] 运行模型和数据库测试，确认字段和方法缺失导致失败。
-- [ ] 增加 `TaskStatus.PAUSED`、`Task.pytest_allowed`，在 `Database.initialize()` 中通过 `PRAGMA table_info(tasks)` 幂等迁移旧表。
-- [ ] 更新任务创建、读取和更新 SQL，并实现 `set_pytest_allowed()`。
-- [ ] 运行 `python -m pytest tests/test_app_paths.py tests/test_models.py tests/test_db.py -v`。
-- [ ] 提交 `feat: add runtime paths and task permissions`。
+- [x] 先写失败测试：环境变量覆盖数据目录，冻结模式使用 `LOCALAPPDATA/FR-Harness`，源码模式使用当前目录。
+- [x] 运行 `python -m pytest tests/test_app_paths.py -v`，确认因模块缺失失败。
+- [x] 实现不可变 `RuntimePaths`，包含 `root`、`env_file`、`config_file`、`database_file`、`log_dir`，并提供幂等目录创建。
+- [x] 运行目标测试并确认通过。
+- [x] 先写失败测试：旧数据库初始化后自动增加 `pytest_allowed`，任务可切换权限并读取；`paused` 可持久化。
+- [x] 运行模型和数据库测试，确认字段和方法缺失导致失败。
+- [x] 增加 `TaskStatus.PAUSED`、`Task.pytest_allowed`，在 `Database.initialize()` 中通过 `PRAGMA table_info(tasks)` 幂等迁移旧表。
+- [x] 更新任务创建、读取和更新 SQL，并实现 `set_pytest_allowed()`。
+- [x] 运行 `python -m pytest tests/test_app_paths.py tests/test_models.py tests/test_db.py -v`。
+- [x] 提交 `feat: add runtime paths and task permissions`。
 
 ### Task 2：可恢复 Agent 状态与完整测试日志
 
@@ -209,4 +209,3 @@
 - [ ] 在最终 main 提交创建并推送 `v1.0.0` 标签。
 - [ ] 等待 Release workflow 完成，验证 Release 页面、ZIP、EXE 和 SHA-256 附件可访问。
 - [ ] 在 README 与 AGENT_LOG 补入最终 Release URL；如需补文档，使用独立小 PR 后再确认 Release 说明。
-

@@ -43,6 +43,7 @@ class Database:
                     workspace TEXT NOT NULL,
                     status TEXT NOT NULL,
                     iteration INTEGER NOT NULL DEFAULT 0,
+                    pytest_allowed INTEGER NOT NULL DEFAULT 0,
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
                 CREATE TABLE IF NOT EXISTS events (
@@ -68,23 +69,43 @@ class Database:
                 );
                 """
             )
+            task_columns = {
+                row["name"] for row in connection.execute("PRAGMA table_info(tasks)")
+            }
+            if "pytest_allowed" not in task_columns:
+                connection.execute(
+                    "ALTER TABLE tasks ADD COLUMN pytest_allowed INTEGER NOT NULL DEFAULT 0"
+                )
 
     def create_task(self, goal: str, workspace: Path) -> Task:
         task = Task(id=uuid4(), goal=redact_secrets(goal), workspace=workspace.resolve())
         with self._connect() as connection:
             connection.execute(
                 """
-                INSERT INTO tasks (id, goal, workspace, status, iteration)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO tasks (
+                    id, goal, workspace, status, iteration, pytest_allowed
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (str(task.id), task.goal, str(task.workspace), task.status.value, task.iteration),
+                (
+                    str(task.id),
+                    task.goal,
+                    str(task.workspace),
+                    task.status.value,
+                    task.iteration,
+                    int(task.pytest_allowed),
+                ),
             )
         return task
 
     def get_task(self, task_id: UUID) -> Task:
         with self._connect() as connection:
             row = connection.execute(
-                "SELECT id, goal, workspace, status, iteration FROM tasks WHERE id = ?",
+                """
+                SELECT id, goal, workspace, status, iteration, pytest_allowed
+                FROM tasks
+                WHERE id = ?
+                """,
                 (str(task_id),),
             ).fetchone()
         if row is None:
@@ -95,6 +116,7 @@ class Database:
             workspace=Path(row["workspace"]),
             status=TaskStatus(row["status"]),
             iteration=row["iteration"],
+            pytest_allowed=bool(row["pytest_allowed"]),
         )
 
     def update_task(self, task: Task) -> None:
@@ -102,7 +124,7 @@ class Database:
             cursor = connection.execute(
                 """
                 UPDATE tasks
-                SET goal = ?, workspace = ?, status = ?, iteration = ?
+                SET goal = ?, workspace = ?, status = ?, iteration = ?, pytest_allowed = ?
                 WHERE id = ?
                 """,
                 (
@@ -110,12 +132,23 @@ class Database:
                     str(task.workspace.resolve()),
                     task.status.value,
                     task.iteration,
+                    int(task.pytest_allowed),
                     str(task.id),
                 ),
             )
             updated = cursor.rowcount
         if updated != 1:
             raise KeyError(f"unknown task: {task.id}")
+
+    def set_pytest_allowed(self, task_id: UUID, allowed: bool) -> Task:
+        with self._connect() as connection:
+            cursor = connection.execute(
+                "UPDATE tasks SET pytest_allowed = ? WHERE id = ?",
+                (int(allowed), str(task_id)),
+            )
+            if cursor.rowcount != 1:
+                raise KeyError(f"unknown task: {task_id}")
+        return self.get_task(task_id)
 
     def append_event(self, task_id: UUID, kind: str, payload: dict[str, object]) -> None:
         with self._connect() as connection:
