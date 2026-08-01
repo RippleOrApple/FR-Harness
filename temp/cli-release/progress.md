@@ -53,6 +53,16 @@
 - 修正：恢复 `FR_CONFIG_PATH` 显式配置优先级，避免 `serve` 错误启动默认配置。
 - 回归：目标测试 18 passed，完整测试 132 passed；`demo` 四项均为 PASS。
 
+### 阶段 4：Windows EXE 与 Release 自动化
+
+- **状态：** 已完成
+- RED：Release 定义、构建说明和入口测试 2 failed。
+- GREEN：新增 PyInstaller 单文件 spec、Windows tag Release workflow、中文快速开始和双击启动脚本。
+- 实际构建：PyInstaller 6.21.0 成功生成 Windows x64 单文件 EXE，大小约 18 MB。
+- 首次冒烟：`--version` 通过，演示中两项失败；根因是冻结程序不能用自身执行 `-m pytest`。
+- 修正：离线演示改用确定性 ToolDispatcher，真实任务的 pytest 执行路径不变。
+- 最终冒烟：EXE 版本为 1.0.0，四项离线演示全部 PASS；Release/Demo 目标测试 4 passed。
+
 ## 测试结果
 
 | 测试 | 期望 | 实际 | 状态 |
@@ -69,6 +79,8 @@
 | Task 5 目标测试 | CLI、路径和离线演示 | 18 passed | 通过 |
 | Task 5 完整回归 | CLI 接入不破坏既有行为 | 132 passed | 通过 |
 | 离线演示 | 四项安全与反馈行为通过 | 4 PASS | 通过 |
+| Windows EXE 构建 | PyInstaller 单文件构建成功 | 约 18 MB EXE | 通过 |
+| Windows EXE 冒烟 | 版本与四项离线演示通过 | 1.0.0、4 PASS | 通过 |
 
 ## 错误日志
 
@@ -76,13 +88,14 @@
 |---|---|---:|---|
 | 2026-08-01 | worktree 的 editable install 指向主工作区旧版本 | 1 | 使用 `PYTHONPATH=src` 验证，最终用干净安装复核 |
 | 2026-08-01 | `serve` 忽略 FR_CONFIG_PATH，测试错误进入服务监听 | 1 | 显式配置恢复最高优先级，132 项测试通过 |
+| 2026-08-01 | EXE 演示使用自身运行 `-m pytest` | 1 | 改为不启动子进程的确定性反馈模拟，成品四项 PASS |
 
 ## 重启检查
 
 | 问题 | 回答 |
 |---|---|
-| 当前阶段 | 阶段 4：EXE 与发布自动化 |
-| 后续阶段 | PyInstaller、文档、隐私检查、完整验收与发布 |
+| 当前阶段 | 阶段 5：文档与隐私收尾 |
+| 后续阶段 | 文档、隐私检查、完整验收与发布 |
 | 最终目标 | 发布可直接验收的 Windows x64 中文交互式 CLI |
 | 关键发现 | 见 `findings.md` |
 | 已完成工作 | 见本文件 2026-08-01 记录 |

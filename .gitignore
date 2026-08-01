@@ -5,3 +5,13 @@ __pycache__/
 *.py[cod]
 *.sqlite3
 *.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+logs/
+release/*.zip
+release/*.sha256

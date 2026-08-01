@@ -36,6 +36,7 @@ def test_packaged_demo_is_offline_and_temporary() -> None:
     assert "TemporaryDirectory" in source
     assert "MockLLM" in source
     assert "OpenAICompatibleLLM" not in source
+    assert "subprocess" not in source
     assert "os.environ" not in source
     assert "OPENAI_API_KEY" not in source
 

@@ -6,8 +6,39 @@ from fr_harness.agent import Agent
 from fr_harness.db import Database
 from fr_harness.guardrails import GuardDecision
 from fr_harness.llm import MockLLM
-from fr_harness.models import Action, ActionKind, ApprovalDecision, TaskStatus
+from fr_harness.models import (
+    Action,
+    ActionKind,
+    ApprovalDecision,
+    Feedback,
+    TaskStatus,
+    ToolResult,
+)
 from fr_harness.task_service import TaskService
+from fr_harness.tools import ToolDispatcher
+
+
+class DeterministicDemoDispatcher(ToolDispatcher):
+    def __init__(self, pytest_results: list[bool]) -> None:
+        self.pytest_results = iter(pytest_results)
+        self.pytest_calls = 0
+
+    def execute(self, action: Action, workspace: Path) -> ToolResult:
+        if action.kind is not ActionKind.RUN_PYTEST:
+            return super().execute(action, workspace)
+        self.pytest_calls += 1
+        passed = next(self.pytest_results)
+        summary = "1 passed" if passed else "FAILED test_app.py::test_greeting"
+        return ToolResult(
+            ok=passed,
+            output=summary,
+            feedback=Feedback(
+                passed=passed,
+                summary=summary,
+                failed_tests=[] if passed else ["test_app.py::test_greeting"],
+            ),
+            details=summary,
+        )
 
 
 def _database(root: Path) -> Database:
@@ -85,6 +116,7 @@ def _feedback_repair_check() -> bool:
             database,
             MockLLM(actions),
             classifier=approved_action,
+            dispatcher=DeterministicDemoDispatcher([False, True]),
         ).run_until_stopped(task.id)
         feedback = [
             event["payload"]
@@ -106,6 +138,7 @@ def _task_pytest_permission_check() -> bool:
             encoding="utf-8",
         )
         database = _database(root)
+        dispatcher = DeterministicDemoDispatcher([True])
         service = TaskService(
             database,
             MockLLM(
@@ -114,10 +147,11 @@ def _task_pytest_permission_check() -> bool:
                     Action(kind=ActionKind.COMPLETE, reason="pytest passed"),
                 ]
             ),
+            dispatcher=dispatcher,
         )
         task = service.create_task("run tests", workspace, allow_pytest=True)
         result = service.run(task.id)
-        return result.status is TaskStatus.SUCCEEDED
+        return result.status is TaskStatus.SUCCEEDED and dispatcher.pytest_calls == 1
 
 
 def run_demo() -> int:

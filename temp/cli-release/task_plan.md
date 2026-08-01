@@ -34,9 +34,9 @@
 ### 阶段 4：演示、EXE 与发布
 
 - [x] 扩展离线演示并新增 `demo` 命令。
-- [ ] 添加 PyInstaller 构建与 Windows Release 工作流。
-- [ ] 本地构建并冒烟验证 EXE。
-- **状态：** 未开始
+- [x] 添加 PyInstaller 构建与 Windows Release 工作流。
+- [x] 本地构建并冒烟验证 EXE。
+- **状态：** 已完成
 
 ### 阶段 5：文档与隐私收尾
 
@@ -77,3 +77,4 @@
 |---|---:|---|
 | worktree 使用主目录的 editable install，直接 `python -m` 命中旧代码 | 1 | 验证时显式设置 `PYTHONPATH=src`，最终在干净环境重新安装 |
 | 显式配置路径被运行目录默认配置覆盖 | 1 | 保留 `FR_CONFIG_PATH` 的最高优先级并补回归测试 |
+| 冻结 EXE 的离线演示尝试用自身执行 `-m pytest` | 1 | 演示改用内置确定性测试反馈，真实任务工具保持不变 |
