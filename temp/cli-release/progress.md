@@ -83,6 +83,14 @@
 - TDD 修复：新增运行时依赖契约测试并把 pytest 移入项目 dependencies，目标测试 16 passed。
 - 使用本机已有的已验证 FR-Harness 镜像作为离线基础层重建当前源码；镜像冷启动 HTTP 200，pytest 9.1.1 可用，测试凭据日志命中 0。
 
+### 阶段 6B：远程交付
+
+- **状态：** 已完成
+- PR #7 的 push 与 pull_request 门禁全部通过，并合入 main 为 `73ceaf8`；main CI 再次 success。
+- `v1.0.0` Windows Release workflow 全部步骤成功，正式 Release 已公开。
+- 匿名 HTTPS 下载 ZIP 与 SHA256 成功，校验值匹配；下载后的 EXE 版本为 1.0.0，四项 demo 全部 PASS。
+- 最终 Release：https://github.com/RippleOrApple/FR-Harness/releases/tag/v1.0.0
+
 ## 测试结果
 
 | 测试 | 期望 | 实际 | 状态 |
@@ -120,8 +128,8 @@
 
 | 问题 | 回答 |
 |---|---|
-| 当前阶段 | 阶段 5：文档与隐私收尾 |
-| 后续阶段 | 文档、隐私检查、完整验收与发布 |
+| 当前阶段 | 阶段 6：完整验证与交付（已完成） |
+| 后续阶段 | 无必需实施任务；学生需自行完成个人反思正文 |
 | 最终目标 | 发布可直接验收的 Windows x64 中文交互式 CLI |
 | 关键发现 | 见 `findings.md` |
 | 已完成工作 | 见本文件 2026-08-01 记录 |

@@ -305,12 +305,12 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] 在干净 clone 中验证安装、137 项测试和演示；本地验证 Windows EXE 与当前源码 Docker 镜像。
 - [x] 修复 pytest 仅存在于 dev extra 的分发缺陷，保证普通安装和 Docker 拥有核心测试工具。
 
-## Task 19：远程 PR、CI 与 v1.0.0 Release — 进行中
+## Task 19：远程 PR、CI 与 v1.0.0 Release — 已完成
 
-- [ ] 推送 `agent/cli-release` 并创建面向 main 的 PR。
-- [ ] 等待 GitHub Actions 的 unit-test 与 docker-build 全部通过。
-- [ ] 合并经过门禁的 PR，创建并推送 `v1.0.0` 标签。
-- [ ] 等待 Windows Release workflow，通过匿名链接验证 ZIP 与 SHA256 附件。
+- [x] 推送 `agent/cli-release` 并创建面向 main 的 PR #7。
+- [x] push 与 pull_request 的 unit-test、docker-build 均通过，main 合并后 CI 再次通过。
+- [x] PR #7 合并为 main 提交 `73ceaf8`，随后创建并推送 `v1.0.0` 标签。
+- [x] Windows Release workflow 全部通过；匿名下载 ZIP 成功，SHA256 匹配，下载后的 EXE 版本与四项演示通过。
 
 ## 依赖关系与可并行项
 
@@ -334,7 +334,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 | 16 | 15 | 是（已完成） |
 | 17 | 16 | 否（已完成） |
 | 18 | 17 | 否（已完成） |
-| 19 | 18 | 否（进行中） |
+| 19 | 18 | 否（已完成） |
 
 ## 完成前检查
 
