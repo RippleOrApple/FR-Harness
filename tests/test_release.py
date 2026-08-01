@@ -1,10 +1,18 @@
 import subprocess
 import sys
 import os
+import tomllib
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_pytest_is_a_runtime_dependency_for_agent_tasks() -> None:
+    with (ROOT / "pyproject.toml").open("rb") as stream:
+        project = tomllib.load(stream)["project"]
+
+    assert any(item.startswith("pytest>=") for item in project["dependencies"])
 
 
 def test_package_exposes_versioned_console_entrypoint() -> None:

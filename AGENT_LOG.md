@@ -203,3 +203,10 @@ Chronological records of skills, context, subagent work, human interventions, an
 - **成品证据：** 重建后的 EXE 显示版本 1.0.0，四项演示全部 PASS；在独立样例项目中成功导入项目模块并得到 `1 passed`。
 - **偏差与诚实边界：** GitHub PR、托管 CI 和 `v1.0.0` Release 尚未发生时，只记录为待交付，不提前写成已发布。完整远程证据将在实际完成后追加。
 - **仓库整理：** 过期 PR #5 已关闭并注明被后续合并工作取代；没有删除其历史分支或改写既有证据。
+
+## 2026-08-01：干净安装与容器分发复核
+
+- **干净 clone：** 在全新临时目录创建 Python 3.13 虚拟环境，安装 `.[dev]`，136 项测试通过，四项离线演示全部 PASS。
+- **Docker 网络问题：** 标准 Dockerfile 两次卡在 Docker Hub OAuth token 连接超时。该失败发生在读取基础镜像元数据之前，不归因于仓库代码。
+- **新增发现：** `pytest` 原先只在 dev extra，普通 `pip install .` 和 Docker 镜像不保证有核心测试工具。先增加失败的运行时依赖测试，再把 pytest 移入项目 dependencies。
+- **离线容器复核：** 使用本机已有的已验证 FR-Harness 镜像作基础层，复制并安装当前源码。当前候选镜像返回 HTTP 200、包含 pytest 9.1.1，日志中测试凭据匹配数为 0；标准 Dockerfile 仍由 GitHub CI 在可联网 runner 上重新构建。

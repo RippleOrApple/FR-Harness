@@ -74,6 +74,15 @@
 - 完整历史：秘密/私钥候选 0；旧路径证据仅记录数量，不在报告中复制具体值，不擅自重写已引用历史。
 - 已关闭过期 PR #5，并说明其已被后续合并工作取代；GitHub 回查遇到 TLS 超时，但关闭命令返回成功。
 
+### 阶段 6A：干净安装与 Docker 验收
+
+- **状态：** 已完成
+- 全新临时 clone：创建独立虚拟环境，安装 `.[dev]`，136 项测试通过，四项 demo 均为 PASS。
+- Docker 首次两次构建均因 Docker Hub OAuth token 网络超时失败，与仓库内容无关。
+- 分发检查发现 pytest 原本只在 dev extra 中，普通安装与 Docker 不保证核心测试工具可用。
+- TDD 修复：新增运行时依赖契约测试并把 pytest 移入项目 dependencies，目标测试 16 passed。
+- 使用本机已有的已验证 FR-Harness 镜像作为离线基础层重建当前源码；镜像冷启动 HTTP 200，pytest 9.1.1 可用，测试凭据日志命中 0。
+
 ## 测试结果
 
 | 测试 | 期望 | 实际 | 状态 |
@@ -93,6 +102,8 @@
 | Windows EXE 构建 | PyInstaller 单文件构建成功 | 约 18 MB EXE | 通过 |
 | Windows EXE 冒烟 | 版本与四项离线演示通过 | 1.0.0、4 PASS | 通过 |
 | Windows EXE 真实 pytest | 独立项目可导入源码并运行测试 | 1 passed | 通过 |
+| 干净 clone | 安装、全量测试、演示 | 136 passed、4 PASS | 通过 |
+| Docker 当前源码 | 构建、HTTP、pytest、日志 | 200、pytest 可用、秘密 0 | 通过 |
 
 ## 错误日志
 
@@ -102,6 +113,8 @@
 | 2026-08-01 | `serve` 忽略 FR_CONFIG_PATH，测试错误进入服务监听 | 1 | 显式配置恢复最高优先级，132 项测试通过 |
 | 2026-08-01 | EXE 演示使用自身运行 `-m pytest` | 1 | 改为不启动子进程的确定性反馈模拟，成品四项 PASS |
 | 2026-08-01 | EXE 真实任务无法用自身执行 `-m pytest` | 1 | 加入隐藏的固定参数 pytest 入口，并以独立项目验证 |
+| 2026-08-01 | Docker Hub token 端点连接超时 | 2 | 使用本机已验证镜像作离线基础层重建，托管 CI 仍执行标准 Dockerfile |
+| 2026-08-01 | pytest 只在 dev extra，普通安装缺少核心工具 | 1 | 移入运行时 dependencies 并增加打包契约测试 |
 
 ## 重启检查
 

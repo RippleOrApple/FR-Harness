@@ -36,6 +36,7 @@
 | `FR_CONFIG_PATH` 保持高于运行目录默认值 | 保留自动化与高级用户显式覆盖能力 |
 | 离线演示不调用外部 pytest 进程 | 冻结 EXE 的 `sys.executable` 是自身，无法作为 Python 解释器使用 |
 | 冻结工具调用隐藏的 `_pytest` 入口 | 保留固定参数与 `shell=False`，同时让无需 Python 的 EXE 可测试目标项目 |
+| pytest 是运行时依赖 | CLI、Docker 和普通 pip 安装都需要执行目标测试，不能只放在 dev extra |
 
 ## 资源
 
