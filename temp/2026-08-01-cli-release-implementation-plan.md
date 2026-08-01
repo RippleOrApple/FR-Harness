@@ -61,15 +61,15 @@
 - 产出：`Agent.pause(task, reason, error_type=None) -> Task`
 - 行为：HTTP 429、HTTP 5xx、`httpx.RequestError` 进入 `paused`；其他 LLM 异常仍失败。
 
-- [ ] 先写失败测试：pytest 摘要保持 2,000 字符上限，同时 `ToolResult.details` 保存至多 100 KB 原始双流输出。
-- [ ] 运行目标测试，确认 `details` 缺失导致失败。
-- [ ] 实现完整输出组合和 100 KB 截断，不改变固定 pytest 命令。
-- [ ] 运行工具测试并确认通过。
-- [ ] 先写失败测试：超时、429 和 503 使任务暂停；非法 JSON 仍使任务失败。
-- [ ] 运行 Agent 测试，确认当前全部被标记失败。
-- [ ] 实现可恢复异常分类和 `paused` 审计事件；完整日志持久化前调用 `redact_secrets()`。
-- [ ] 运行 `python -m pytest tests/test_tools.py tests/test_agent.py -v`。
-- [ ] 提交 `feat: preserve recoverable task state`。
+- [x] 先写失败测试：pytest 摘要保持 2,000 字符上限，同时 `ToolResult.details` 保存至多 100 KB 原始双流输出。
+- [x] 运行目标测试，确认 `details` 缺失导致失败。
+- [x] 实现完整输出组合和 100 KB 截断，不改变固定 pytest 命令。
+- [x] 运行工具测试并确认通过。
+- [x] 先写失败测试：超时、429 和 503 使任务暂停；非法 JSON 仍使任务失败。
+- [x] 运行 Agent 测试，确认当前全部被标记失败。
+- [x] 实现可恢复异常分类和 `paused` 审计事件；完整日志持久化前调用 `redact_secrets()`。
+- [x] 运行 `python -m pytest tests/test_tools.py tests/test_agent.py -v`。
+- [x] 提交 `feat: preserve recoverable task state`。
 
 ### Task 3：任务协调服务
 

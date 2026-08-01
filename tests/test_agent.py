@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import httpx
+import pytest
+
 from fr_harness.agent import Agent
 from fr_harness.db import Database
 from fr_harness.guardrails import GuardDecision
@@ -16,6 +19,15 @@ class RecordingLLM:
         if not self.actions:
             raise RuntimeError("action queue exhausted")
         return self.actions.pop(0)
+
+
+class RaisingLLM:
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+
+    def next_action(self, context: list[dict[str, str]]) -> Action:
+        del context
+        raise self.error
 
 
 def make_database(tmp_path: Path) -> Database:
@@ -184,3 +196,41 @@ def test_different_secret_values_do_not_look_like_a_repeated_action(
     serialized_events = repr(database.list_events(task.id))
     assert first not in serialized_events
     assert second not in serialized_events
+
+
+@pytest.mark.parametrize("status_code", [429, 500, 503])
+def test_agent_pauses_on_recoverable_http_status(
+    tmp_path: Path, status_code: int
+) -> None:
+    database = make_database(tmp_path)
+    task = database.create_task("repair", tmp_path)
+    request = httpx.Request("POST", "https://model.invalid/chat/completions")
+    response = httpx.Response(status_code, request=request)
+    error = httpx.HTTPStatusError("temporary model error", request=request, response=response)
+
+    result = Agent(database, RaisingLLM(error)).run_once(task.id)
+
+    assert result.status is TaskStatus.PAUSED
+    assert database.list_events(task.id)[-1]["kind"] == "paused"
+
+
+def test_agent_pauses_on_model_network_error(tmp_path: Path) -> None:
+    database = make_database(tmp_path)
+    task = database.create_task("repair", tmp_path)
+    request = httpx.Request("POST", "https://model.invalid/chat/completions")
+
+    result = Agent(
+        database,
+        RaisingLLM(httpx.ReadTimeout("temporary timeout", request=request)),
+    ).run_once(task.id)
+
+    assert result.status is TaskStatus.PAUSED
+
+
+def test_agent_still_fails_on_nonrecoverable_llm_error(tmp_path: Path) -> None:
+    database = make_database(tmp_path)
+    task = database.create_task("repair", tmp_path)
+
+    result = Agent(database, RaisingLLM(ValueError("invalid action"))).run_once(task.id)
+
+    assert result.status is TaskStatus.FAILED

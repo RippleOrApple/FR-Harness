@@ -56,3 +56,4 @@ class ToolResult(BaseModel):
     ok: bool
     output: str
     feedback: Feedback | None = None
+    details: str | None = None

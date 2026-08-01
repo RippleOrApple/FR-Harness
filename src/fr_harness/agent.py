@@ -4,6 +4,8 @@ from collections.abc import Callable
 from pathlib import Path
 from uuid import UUID
 
+import httpx
+
 from fr_harness.config import HarnessConfig
 from fr_harness.db import Database
 from fr_harness.guardrails import GuardDecision, classify
@@ -23,6 +25,7 @@ from fr_harness.tools import ToolDispatcher
 
 Classifier = Callable[[Action, Path], GuardDecision]
 TERMINAL_STATUSES = {
+    TaskStatus.PAUSED,
     TaskStatus.SUCCEEDED,
     TaskStatus.FAILED,
     TaskStatus.CANCELLED,
@@ -81,6 +84,8 @@ class Agent:
         try:
             action = self.llm.next_action(context)
         except Exception as error:
+            if self._is_recoverable_llm_error(error):
+                return self._pause(task, "model service temporarily unavailable", error)
             return self._fail(task, "llm error", error_type=type(error).__name__)
 
         task.iteration += 1
@@ -171,15 +176,14 @@ class Agent:
         except Exception as error:
             return self._fail(task, "tool error", error_type=type(error).__name__)
 
-        self.database.append_event(
-            task.id,
-            "tool_result",
-            {
-                "ok": result.ok,
-                "output": redact_secrets(result.output),
-                "action_kind": action.kind.value,
-            },
-        )
+        result_payload: dict[str, object] = {
+            "ok": result.ok,
+            "output": redact_secrets(result.output),
+            "action_kind": action.kind.value,
+        }
+        if result.details is not None:
+            result_payload["details"] = redact_secrets(result.details)
+        self.database.append_event(task.id, "tool_result", result_payload)
         if result.output:
             label = action.kind.value
             if action.path:
@@ -216,6 +220,25 @@ class Agent:
             payload["error_type"] = error_type
         self.database.append_event(task.id, event_kind, payload)
         return task
+
+    def _pause(self, task: Task, reason: str, error: Exception) -> Task:
+        task.status = TaskStatus.PAUSED
+        self.database.update_task(task)
+        self.database.append_event(
+            task.id,
+            "paused",
+            {"reason": reason, "error_type": type(error).__name__},
+        )
+        return task
+
+    @staticmethod
+    def _is_recoverable_llm_error(error: Exception) -> bool:
+        if isinstance(error, httpx.RequestError):
+            return True
+        if isinstance(error, httpx.HTTPStatusError):
+            status = error.response.status_code
+            return status == 429 or status >= 500
+        return False
 
     @staticmethod
     def _last_payload(

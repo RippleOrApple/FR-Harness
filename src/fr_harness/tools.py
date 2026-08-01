@@ -74,10 +74,14 @@ class ToolDispatcher:
             feedback = parse_pytest_result(
                 completed.returncode, completed.stdout, completed.stderr
             )
+            details = "\n".join(
+                part for part in (completed.stdout, completed.stderr) if part
+            )[:100_000]
             return ToolResult(
                 ok=feedback.passed,
                 output=feedback.summary,
                 feedback=feedback,
+                details=details,
             )
 
         raise ValueError(f"unsupported tool action: {action.kind}")

@@ -106,6 +106,27 @@ def test_run_pytest_does_not_create_pytest_cache(tmp_path: Path) -> None:
     assert not (tmp_path / ".pytest_cache").exists()
 
 
+def test_run_pytest_keeps_capped_details_separate_from_feedback_summary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stdout = "A" * 60_000
+    stderr = "B" * 60_000
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 1, stdout, stderr)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    result = ToolDispatcher().execute(Action(kind=ActionKind.RUN_PYTEST), tmp_path)
+
+    assert result.feedback is not None
+    assert len(result.feedback.summary) == 2_000
+    assert result.details is not None
+    assert len(result.details) == 100_000
+    assert result.details.startswith("A" * 100)
+    assert result.details.endswith("B" * 100)
+
+
 def test_dispatcher_rejects_non_tool_action(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="unsupported tool action"):
         ToolDispatcher().execute(Action(kind=ActionKind.COMPLETE), tmp_path)

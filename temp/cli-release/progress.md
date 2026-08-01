@@ -22,6 +22,13 @@
 - 回归：目标测试 10 passed，完整测试 111 passed。
 - 文件：`app_paths.py`、`models.py`、`db.py` 及对应测试。
 
+### 阶段 3A：可恢复 Agent 状态与完整测试日志
+
+- **状态：** 已完成
+- RED：完整日志字段缺失；超时、429、500、503 均被旧实现标记为失败，共 5 failed。
+- GREEN：ToolResult 分离 2,000 字符摘要与 100 KB details；可恢复模型错误进入 paused。
+- 回归：目标 6 passed，Agent/Tools 22 passed，完整测试 117 passed。
+
 ## 测试结果
 
 | 测试 | 期望 | 实际 | 状态 |
@@ -29,6 +36,8 @@
 | 基线完整 pytest | 现有测试全部通过 | 105 passed | 通过 |
 | Task 1 目标测试 | 路径与数据库迁移通过 | 10 passed | 通过 |
 | Task 1 完整回归 | 不破坏现有行为 | 111 passed | 通过 |
+| Task 2 红灯 | 新行为尚未实现 | 5 failed, 1 passed | 符合预期 |
+| Task 2 完整回归 | 新旧 Agent 与工具行为通过 | 117 passed | 通过 |
 
 ## 错误日志
 
