@@ -41,6 +41,15 @@ class TaskService:
     def list_tasks(self) -> list[Task]:
         return self.database.list_tasks()
 
+    def pause(self, task_id: UUID, reason: str) -> Task:
+        task = self.database.get_task(task_id)
+        if task.status is TaskStatus.PENDING_APPROVAL:
+            return task
+        task.status = TaskStatus.PAUSED
+        self.database.update_task(task)
+        self.database.append_event(task.id, "paused", {"reason": reason})
+        return task
+
     def run(
         self,
         task_id: UUID,

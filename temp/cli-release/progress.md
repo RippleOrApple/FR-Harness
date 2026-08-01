@@ -36,6 +36,14 @@
 - GREEN：TaskService 逐轮复用 Agent，持久化 pytest 权限，协调一次性覆盖审批和恢复。
 - 回归：目标 5 passed，完整测试 122 passed。
 
+### 阶段 3C：中文交互控制台
+
+- **状态：** 已完成
+- RED：`fr_harness.console` 模块缺失，测试收集失败。
+- GREEN：主菜单、新任务、工作区校验、pytest 授权、diff 审批、历史恢复和 Ctrl+C 保存完成。
+- 修正：首轮仅“任务已成功”文案不符，改为“任务已成功完成”后通过。
+- 回归：Console/TaskService 12 passed，完整测试 129 passed。
+
 ## 测试结果
 
 | 测试 | 期望 | 实际 | 状态 |
@@ -47,6 +55,8 @@
 | Task 2 完整回归 | 新旧 Agent 与工具行为通过 | 117 passed | 通过 |
 | Task 3 目标测试 | 任务权限、审批、进度和恢复 | 5 passed | 通过 |
 | Task 3 完整回归 | 不破坏 WebUI 与既有 Agent | 122 passed | 通过 |
+| Task 4 目标测试 | 中文交互与任务服务 | 12 passed | 通过 |
+| Task 4 完整回归 | 全部现有行为通过 | 129 passed | 通过 |
 
 ## 错误日志
 

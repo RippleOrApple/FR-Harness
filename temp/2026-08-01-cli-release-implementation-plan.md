@@ -103,18 +103,18 @@
 - 产出：`render_action_diff(workspace: Path, action: Action, limit: int = 20_000) -> DiffPreview`
 - 依赖：TaskService、RuntimePaths、setup/doctor 回调。
 
-- [ ] 先写失败测试：主菜单固定四项，退出返回 0；非法选项后重新显示。
-- [ ] 运行 `python -m pytest tests/test_console.py -v`，确认模块缺失失败。
-- [ ] 实现可注入 `input_fn`、`output_fn` 的控制台和主菜单循环。
-- [ ] 增加失败测试：当前目录默认工作区、非法目录重试、空目标拒绝、任务摘要确认和 pytest 权限确认。
-- [ ] 实现新建任务流程，并确保拒绝权限不执行 Agent。
-- [ ] 增加失败测试：覆盖审批显示相对路径和行数，可查看 unified diff；拒绝后取消。
-- [ ] 实现 `DiffPreview` 和审批菜单，diff 经过脱敏并截断。
-- [ ] 增加失败测试：pytest 失败显示摘要，用户可查看完整日志；状态和历史列表使用中文且 UUID 默认隐藏。
-- [ ] 实现事件渲染、结果摘要、历史查看和允许状态恢复。
-- [ ] 增加 `KeyboardInterrupt` 测试，确保任务暂停并返回主菜单。
-- [ ] 运行 `python -m pytest tests/test_console.py tests/test_task_service.py -v`。
-- [ ] 提交 `feat: add Chinese interactive console`。
+- [x] 先写失败测试：主菜单固定四项，退出返回 0；非法选项后重新显示。
+- [x] 运行 `python -m pytest tests/test_console.py -v`，确认模块缺失失败。
+- [x] 实现可注入 `input_fn`、`output_fn` 的控制台和主菜单循环。
+- [x] 增加失败测试：当前目录默认工作区、非法目录重试、空目标拒绝、任务摘要确认和 pytest 权限确认。
+- [x] 实现新建任务流程，并确保拒绝权限不执行 Agent。
+- [x] 增加失败测试：覆盖审批显示相对路径和行数，可查看 unified diff；拒绝后取消。
+- [x] 实现 `DiffPreview` 和审批菜单，diff 经过脱敏并截断。
+- [x] 增加失败测试：pytest 失败显示摘要，用户可查看完整日志；状态和历史列表使用中文且 UUID 默认隐藏。
+- [x] 实现事件渲染、结果摘要、历史查看和允许状态恢复。
+- [x] 增加 `KeyboardInterrupt` 测试，确保任务暂停并返回主菜单。
+- [x] 运行 `python -m pytest tests/test_console.py tests/test_task_service.py -v`。
+- [x] 提交 `feat: add Chinese interactive console`。
 
 ### Task 5：CLI 集成与离线 demo
 
