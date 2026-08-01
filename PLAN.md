@@ -295,13 +295,22 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] Release workflow 对独立样例项目执行真实 pytest 冒烟。
 - [x] 本地成品对独立项目验证为 `1 passed`，完整源码回归为 136 passed。
 
-## Task 18：最终文档、隐私与交付验收 — 进行中
+## Task 18：最终文档、隐私与本地验收 — 已完成
+
+**提交：** `3c83f24 docs: finalize CLI release and privacy guide`、`02f1e66 fix: include pytest in runtime distribution`
 
 - [x] 整体重写 README，以 Release CLI 为主要交付并保留可选 WebUI 与 Docker。
-- [ ] 更新 SPEC、PLAN、AGENT_LOG 和 REFLECTION 占位说明。
-- [ ] 清理当前树绝对路径并生成当前版本与历史敏感信息扫描报告。
-- [ ] 在干净 clone 中验证安装、全量测试、演示、Docker 和 Windows EXE。
-- [ ] 提交、推送、创建 PR、等待 CI，合并后发布并验证 `v1.0.0` Release。
+- [x] 更新 SPEC、PLAN、AGENT_LOG 和 REFLECTION 占位说明。
+- [x] 清理当前树绝对路径并生成当前版本与历史敏感信息扫描报告。
+- [x] 在干净 clone 中验证安装、137 项测试和演示；本地验证 Windows EXE 与当前源码 Docker 镜像。
+- [x] 修复 pytest 仅存在于 dev extra 的分发缺陷，保证普通安装和 Docker 拥有核心测试工具。
+
+## Task 19：远程 PR、CI 与 v1.0.0 Release — 进行中
+
+- [ ] 推送 `agent/cli-release` 并创建面向 main 的 PR。
+- [ ] 等待 GitHub Actions 的 unit-test 与 docker-build 全部通过。
+- [ ] 合并经过门禁的 PR，创建并推送 `v1.0.0` 标签。
+- [ ] 等待 Windows Release workflow，通过匿名链接验证 ZIP 与 SHA256 附件。
 
 ## 依赖关系与可并行项
 
@@ -324,7 +333,8 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 | 15 | 14 | 否（已完成） |
 | 16 | 15 | 是（已完成） |
 | 17 | 16 | 否（已完成） |
-| 18 | 17 | 否（进行中） |
+| 18 | 17 | 否（已完成） |
+| 19 | 18 | 否（进行中） |
 
 ## 完成前检查
 
