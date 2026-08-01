@@ -9,6 +9,7 @@ class TaskStatus(StrEnum):
     CREATED = "created"
     RUNNING = "running"
     PENDING_APPROVAL = "pending_approval"
+    PAUSED = "paused"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     CANCELLED = "cancelled"
@@ -42,6 +43,7 @@ class Task(BaseModel):
     workspace: Path
     status: TaskStatus = TaskStatus.CREATED
     iteration: int = 0
+    pytest_allowed: bool = False
 
 
 class Feedback(BaseModel):
@@ -54,3 +56,4 @@ class ToolResult(BaseModel):
     ok: bool
     output: str
     feedback: Feedback | None = None
+    details: str | None = None

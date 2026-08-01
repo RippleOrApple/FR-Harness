@@ -1,0 +1,32 @@
+FR-Harness Windows x64 快速开始
+================================
+
+1. 解压整个 ZIP，不要只从压缩包内临时运行 EXE。
+2. 双击“启动 FR-Harness.cmd”，或直接双击“FR-Harness.exe”。
+3. 首次运行按中文提示选择模型供应商、模型名并输入 API Key。
+4. 在主菜单选择“新建修复任务”，工作区直接回车时使用当前目录。
+
+本发行版无需安装 Python。
+
+离线检查
+--------
+在当前目录打开 PowerShell 或 CMD，运行：
+
+    FR-Harness.exe demo
+
+该命令不访问网络，也不需要 API Key；四项均显示 PASS 即表示核心机制正常。
+
+可选 WebUI
+---------
+需要本地网页界面时运行：
+
+    FR-Harness.exe serve --host 127.0.0.1 --port 8000
+
+然后访问 http://127.0.0.1:8000/ 。WebUI 只在本机启动，不是公网托管服务。
+
+数据与安全
+----------
+- 配置、任务数据库和日志默认位于当前 Windows 用户的 LocalAppData/FR-Harness。
+- API Key 保存到 Windows 凭据管理器，不写入 .env。
+- pytest 会执行目标项目中的 Python 代码，请只对可信项目授权。
+- Agent 修改已有文件前仍会逐次请求审批。

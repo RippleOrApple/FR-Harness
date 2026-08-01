@@ -54,15 +54,20 @@ class ToolDispatcher:
             )
 
         if action.kind is ActionKind.RUN_PYTEST:
-            completed = subprocess.run(
-                [
+            command = (
+                [sys.executable, "_pytest"]
+                if getattr(sys, "frozen", False)
+                else [
                     sys.executable,
                     "-m",
                     "pytest",
                     "-q",
                     "-p",
                     "no:cacheprovider",
-                ],
+                ]
+            )
+            completed = subprocess.run(
+                command,
                 cwd=root,
                 capture_output=True,
                 text=True,
@@ -74,10 +79,14 @@ class ToolDispatcher:
             feedback = parse_pytest_result(
                 completed.returncode, completed.stdout, completed.stderr
             )
+            details = "\n".join(
+                part for part in (completed.stdout, completed.stderr) if part
+            )[:100_000]
             return ToolResult(
                 ok=feedback.passed,
                 output=feedback.summary,
                 feedback=feedback,
+                details=details,
             )
 
         raise ValueError(f"unsupported tool action: {action.kind}")

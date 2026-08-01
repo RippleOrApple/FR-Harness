@@ -4,9 +4,9 @@
 
 **目标：** 构建一个 Python Coding Agent Harness：在受限工作区内修改代码、运行 `pytest`、将客观失败结果回灌给 LLM，并将危险操作暂停等待用户审批。
 
-**架构：** FastAPI 提供极简 WebUI；自建的 `Agent.run_once()` 负责读取任务状态、调用可注入 LLM、验证动作、执行护栏和工具、记录审计事件，并返回新的任务状态。SQLite 保存任务、审批、记忆和审计事件；MockLLM 使所有核心机制可以离线、确定性测试。
+**架构：** 中文交互式 CLI 是主要入口，FastAPI 提供可选本地 WebUI；`TaskService` 协调任务恢复、进度与审批，自建的 `Agent.run_once()` 负责控制循环。SQLite 保存任务、权限、审批、记忆和审计事件；MockLLM 使核心机制可以离线、确定性测试。
 
-**技术栈：** Python 3.12、FastAPI、Uvicorn、Pydantic v2、SQLite、pytest、httpx、python-dotenv、Docker。
+**技术栈：** Python 3.12、FastAPI、Uvicorn、Pydantic v2、SQLite、pytest、httpx、python-dotenv、PyInstaller、Docker。
 
 ## 全局约束
 
@@ -33,8 +33,12 @@
 | `src/fr_harness/feedback.py` | pytest 输出解析与反馈摘要 |
 | `src/fr_harness/memory.py` | 项目约定、失败尝试与上下文构建 |
 | `src/fr_harness/agent.py` | 自建 Agent 主循环、停止策略 |
+| `src/fr_harness/app_paths.py` | 源码与冻结 EXE 的运行数据路径 |
+| `src/fr_harness/task_service.py` | 任务创建、逐轮执行、审批和恢复协调 |
+| `src/fr_harness/console.py` | 中文菜单、diff、pytest 日志和历史任务 |
 | `src/fr_harness/web.py` | FastAPI API 与任务/详情/审批页面 |
-| `src/fr_harness/cli.py` | `init`、`serve`、`test`、`credential` 命令 |
+| `src/fr_harness/cli.py` | `run`、`demo`、`setup`、`doctor`、`serve` 等命令 |
+| `src/fr_harness/demo.py` | 可打包的离线确定性演示 |
 | `fr-harness.toml` | 不含秘密的安全默认规则 |
 | `tests/` | 离线单元测试与 API 测试 |
 | `demo/mock_repair_demo.py` | 必交的确定性机制演示 |
@@ -160,7 +164,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] 先写失败测试：文件读取返回 UTF-8 内容；失败输出中提取 `FAILED test_app.py::test_greeting`。
 - [x] 实现 `parse_pytest_result(returncode, stdout, stderr) -> Feedback`：仅退出码 0 表示通过，摘要最长 2,000 字符。
 - [x] 实现 `ToolDispatcher.execute(action, workspace) -> ToolResult`，只允许读文件、写文件和运行 pytest。
-- [x] pytest 必须使用固定命令 `subprocess.run([sys.executable, "-m", "pytest", "-q"], ...)`，绝不能执行 LLM 给出的任意 shell 字符串。
+- [x] pytest 必须使用固定命令 `subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"], ...)`，绝不能执行 LLM 给出的任意 shell 字符串。
 - [x] 运行测试并提交：`feat: add constrained tools and pytest feedback`。
 
 ## Task 6：记忆仓储与上下文构建 — 已完成
@@ -232,8 +236,8 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 **依赖：** Task 7、8
 
 - [x] 测试必须执行演示脚本，并断言退出码为 0。
-- [x] 脚本只用 `TemporaryDirectory`、临时 pytest 项目和 MockLLM；不得读取真实 key 或发网络请求。
-- [x] 输出三行：`guardrail approval: PASS`、`feedback repair: PASS`、`approval one-time use: PASS`。
+- [x] 脚本只用 `TemporaryDirectory`、确定性测试反馈和 MockLLM；不得读取真实 key 或发网络请求。
+- [x] 当前版本输出四项中文 PASS，并增加任务级 pytest 权限检查。
 - [x] 运行 `python demo/mock_repair_demo.py` 与测试后，提交 `test: add deterministic mechanism demo`。
 
 ## Task 12：CI、README 与发布验证 — 已完成
@@ -246,6 +250,67 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] CI 必须有名为 `unit-test` 的 job，安装 `.[dev]` 后运行 `python -m pytest -v`；可选增加镜像构建 job。
 - [x] README 必须用 UTF-8，说明项目、架构、安装、测试、WebUI、Mock 演示、Docker、Key 安全、`.env` 明文风险、工作区边界、限制和目录结构。
 - [x] 完整运行 `python -m pytest -v`、`python demo/mock_repair_demo.py`、Docker 冷启动验证；提交 `docs: add release and security guide`。
+
+## Task 13：运行路径、任务权限与可恢复错误 — 已完成
+
+**提交：** `5b64cf7 feat: add runtime paths and task permissions`、`362c461 feat: preserve recoverable task state`
+
+- [x] 冻结 EXE 默认使用 LocalAppData，源码模式保留当前目录体验，并支持 `FR_DATA_DIR` 覆盖。
+- [x] 数据库幂等迁移 `pytest_allowed`，任务级权限可跨进程恢复。
+- [x] 网络错误、HTTP 429 和 5xx 进入 `paused`，其他不可恢复错误仍失败。
+- [x] pytest 摘要与最多 100 KB 的脱敏完整日志分离。
+
+## Task 14：任务服务与中文交互控制台 — 已完成
+
+**提交：** `0f89d23 feat: add interactive task service`、`5d76702 feat: add Chinese interactive console`
+
+- [x] `TaskService` 复用 Agent，逐轮发送事件并协调一次性审批与恢复。
+- [x] 实现四项主菜单、当前目录默认工作区、单行目标和任务级 pytest 授权。
+- [x] 已有文件写入显示摘要和可选 unified diff；失败测试提供可选完整输出。
+- [x] 历史任务按目标展示，可恢复等待审批、暂停和中断状态。
+
+## Task 15：CLI 入口与离线演示 — 已完成
+
+**提交：** `dad7c4f feat: integrate interactive cli and offline demo`
+
+- [x] 无参数和 `run` 进入交互模式；新增 `demo` 与 `--version`。
+- [x] 缺少配置时自动运行 setup，完成后继续主菜单。
+- [x] 离线演示迁入包内，保证单文件构建可调用。
+- [x] 完整回归达到 132 passed。
+
+## Task 16：Windows Release 自动化 — 已完成
+
+**提交：** `38bead1 build: add verified Windows release`
+
+- [x] 新增 PyInstaller 单文件 spec、Windows tag workflow、中文快速开始和 ZIP 启动脚本。
+- [x] Release workflow 运行测试、版本/演示冒烟、压缩并生成 SHA256。
+- [x] 本地实际构建 Windows x64 EXE 并验证版本和四项演示。
+
+## Task 17：冻结 EXE 的 pytest 执行 — 已完成
+
+**提交：** `51eac85 fix: run pytest from frozen executable`
+
+- [x] 复现冻结程序不能用自身执行 `-m pytest` 的根因。
+- [x] 新增隐藏且固定参数的内置 pytest 入口，继续保持 `shell=False`。
+- [x] Release workflow 对独立样例项目执行真实 pytest 冒烟。
+- [x] 本地成品对独立项目验证为 `1 passed`，完整源码回归为 136 passed。
+
+## Task 18：最终文档、隐私与本地验收 — 已完成
+
+**提交：** `3c83f24 docs: finalize CLI release and privacy guide`、`02f1e66 fix: include pytest in runtime distribution`
+
+- [x] 整体重写 README，以 Release CLI 为主要交付并保留可选 WebUI 与 Docker。
+- [x] 更新 SPEC、PLAN、AGENT_LOG 和 REFLECTION 占位说明。
+- [x] 清理当前树绝对路径并生成当前版本与历史敏感信息扫描报告。
+- [x] 在干净 clone 中验证安装、137 项测试和演示；本地验证 Windows EXE 与当前源码 Docker 镜像。
+- [x] 修复 pytest 仅存在于 dev extra 的分发缺陷，保证普通安装和 Docker 拥有核心测试工具。
+
+## Task 19：远程 PR、CI 与 v1.0.0 Release — 进行中
+
+- [ ] 推送 `agent/cli-release` 并创建面向 main 的 PR。
+- [ ] 等待 GitHub Actions 的 unit-test 与 docker-build 全部通过。
+- [ ] 合并经过门禁的 PR，创建并推送 `v1.0.0` 标签。
+- [ ] 等待 Windows Release workflow，通过匿名链接验证 ZIP 与 SHA256 附件。
 
 ## 依赖关系与可并行项
 
@@ -263,6 +328,13 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 | 10 | 2、3、9 | 否 |
 | 11 | 7、8 | 是 |
 | 12 | 10、11 | 否 |
+| 13 | 12 | 否（已完成） |
+| 14 | 13 | 否（已完成） |
+| 15 | 14 | 否（已完成） |
+| 16 | 15 | 是（已完成） |
+| 17 | 16 | 否（已完成） |
+| 18 | 17 | 否（已完成） |
+| 19 | 18 | 否（进行中） |
 
 ## 完成前检查
 
