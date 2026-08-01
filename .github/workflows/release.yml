@@ -29,6 +29,12 @@ jobs:
         run: |
           .\dist\FR-Harness.exe --version
           .\dist\FR-Harness.exe demo
+          New-Item -ItemType Directory -Force .\smoke-project | Out-Null
+          "def add(left, right):`n    return left + right" | Set-Content .\smoke-project\calculator.py -Encoding utf8
+          "from calculator import add`n`ndef test_release():`n    assert add(2, 3) == 5" | Set-Content .\smoke-project\test_release.py -Encoding utf8
+          Push-Location .\smoke-project
+          & ..\dist\FR-Harness.exe _pytest
+          Pop-Location
       - name: Package release
         shell: pwsh
         run: |

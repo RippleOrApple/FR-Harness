@@ -505,6 +505,12 @@ def _test() -> int:
     return completed.returncode
 
 
+def _embedded_pytest() -> int:
+    import pytest
+
+    return pytest.main(["-q", "-p", "no:cacheprovider"])
+
+
 def _configuration_is_complete(paths: RuntimePaths, store: CredentialStore) -> bool:
     load_dotenv(paths.env_file, override=True)
     if not os.environ.get("FR_LLM_BASE_URL") or not os.environ.get("FR_LLM_MODEL"):
@@ -566,10 +572,13 @@ def main(
     credential_store: CredentialStore | None = None,
     runtime_paths: RuntimePaths | None = None,
 ) -> int:
+    selected_argv = list(argv) if argv is not None else sys.argv[1:]
+    if selected_argv == ["_pytest"]:
+        return _embedded_pytest()
     paths = runtime_paths or RuntimePaths.from_environment()
     paths.ensure()
     load_dotenv(paths.env_file)
-    args = _parser().parse_args(argv)
+    args = _parser().parse_args(selected_argv)
     store = credential_store or CredentialStore()
     if args.command in {None, "run"}:
         return _interactive(paths, store)

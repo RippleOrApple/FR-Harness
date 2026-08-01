@@ -41,6 +41,7 @@ def test_windows_release_definition_contains_verified_artifacts() -> None:
     assert "pyinstaller --clean fr-harness.spec" in workflow
     assert "fr-harness.exe --version" in workflow.lower()
     assert "fr-harness.exe demo" in workflow.lower()
+    assert "fr-harness.exe _pytest" in workflow.lower()
     assert "Compress-Archive" in workflow
     assert "Get-FileHash" in workflow
     assert "gh release create" in workflow

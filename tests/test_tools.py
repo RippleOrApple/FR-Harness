@@ -103,6 +103,27 @@ def test_run_pytest_does_not_create_pytest_cache(tmp_path: Path) -> None:
     result = ToolDispatcher().execute(Action(kind=ActionKind.RUN_PYTEST), tmp_path)
 
     assert result.ok is True
+
+
+def test_frozen_executable_uses_embedded_pytest_command(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    observed: dict[str, object] = {}
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        observed["command"] = command
+        observed.update(kwargs)
+        return subprocess.CompletedProcess(command, 0, "1 passed", "")
+
+    monkeypatch.setattr("fr_harness.tools.subprocess.run", fake_run)
+    monkeypatch.setattr("fr_harness.tools.sys.frozen", True, raising=False)
+    monkeypatch.setattr("fr_harness.tools.sys.executable", "FR-Harness.exe")
+
+    result = ToolDispatcher().execute(Action(kind=ActionKind.RUN_PYTEST), tmp_path)
+
+    assert result.ok is True
+    assert observed["command"] == ["FR-Harness.exe", "_pytest"]
+    assert observed["shell"] is False
     assert not (tmp_path / ".pytest_cache").exists()
 
 

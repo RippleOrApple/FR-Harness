@@ -132,6 +132,25 @@ def test_demo_command_runs_without_loading_credentials(
     assert calls == ["demo"]
 
 
+def test_embedded_pytest_command_is_internal_and_fixed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    paths = RuntimePaths(
+        root=tmp_path,
+        env_file=tmp_path / ".env",
+        config_file=tmp_path / "fr-harness.toml",
+        database_file=tmp_path / "fr_harness.sqlite3",
+        log_dir=tmp_path / "logs",
+    )
+    monkeypatch.setattr(cli, "_embedded_pytest", lambda: calls.append("pytest") or 0)
+
+    assert cli.main(["_pytest"], runtime_paths=paths) == 0
+    assert calls == ["pytest"]
+    assert "_pytest" not in cli._parser().format_help()
+
+
 class FakeCredentialStore:
     def __init__(self, existing: str | None = None) -> None:
         self.value = existing

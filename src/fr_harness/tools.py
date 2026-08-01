@@ -54,15 +54,20 @@ class ToolDispatcher:
             )
 
         if action.kind is ActionKind.RUN_PYTEST:
-            completed = subprocess.run(
-                [
+            command = (
+                [sys.executable, "_pytest"]
+                if getattr(sys, "frozen", False)
+                else [
                     sys.executable,
                     "-m",
                     "pytest",
                     "-q",
                     "-p",
                     "no:cacheprovider",
-                ],
+                ]
+            )
+            completed = subprocess.run(
+                command,
                 cwd=root,
                 capture_output=True,
                 text=True,

@@ -62,6 +62,7 @@
 - 首次冒烟：`--version` 通过，演示中两项失败；根因是冻结程序不能用自身执行 `-m pytest`。
 - 修正：离线演示改用确定性 ToolDispatcher，真实任务的 pytest 执行路径不变。
 - 最终冒烟：EXE 版本为 1.0.0，四项离线演示全部 PASS；Release/Demo 目标测试 4 passed。
+- 成品缺陷修复：冻结环境的真实任务改为调用 EXE 内置的受控 pytest 入口；独立样例项目可导入自身模块并得到 `1 passed`。
 
 ## 测试结果
 
@@ -81,6 +82,7 @@
 | 离线演示 | 四项安全与反馈行为通过 | 4 PASS | 通过 |
 | Windows EXE 构建 | PyInstaller 单文件构建成功 | 约 18 MB EXE | 通过 |
 | Windows EXE 冒烟 | 版本与四项离线演示通过 | 1.0.0、4 PASS | 通过 |
+| Windows EXE 真实 pytest | 独立项目可导入源码并运行测试 | 1 passed | 通过 |
 
 ## 错误日志
 
@@ -89,6 +91,7 @@
 | 2026-08-01 | worktree 的 editable install 指向主工作区旧版本 | 1 | 使用 `PYTHONPATH=src` 验证，最终用干净安装复核 |
 | 2026-08-01 | `serve` 忽略 FR_CONFIG_PATH，测试错误进入服务监听 | 1 | 显式配置恢复最高优先级，132 项测试通过 |
 | 2026-08-01 | EXE 演示使用自身运行 `-m pytest` | 1 | 改为不启动子进程的确定性反馈模拟，成品四项 PASS |
+| 2026-08-01 | EXE 真实任务无法用自身执行 `-m pytest` | 1 | 加入隐藏的固定参数 pytest 入口，并以独立项目验证 |
 
 ## 重启检查
 
