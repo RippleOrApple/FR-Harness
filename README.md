@@ -13,7 +13,7 @@ FR-Harness 是一个面向 Python 项目的安全 Coding Agent Harness。它在�
 
 Release 为单文件 Windows x64 程序，无需安装 Python。ZIP 同时提供 SHA256 校验文件和中文快速开始说明。
 
-`v1.0.1` 是文档与可用性维护版，包含空工作区创建任务的引导修复、源码启动脚本说明、`temp/` 忽略规则、个人反思正文和对话过程整理文档。
+`v1.0.1` 是文档与可用性维护版，包含空工作区创建任务的引导修复、源码启动脚本说明、`docs/` 与 `temp/` 忽略规则，以及个人反思正文。
 
 无需配置即可先做离线检查：
 
@@ -297,4 +297,4 @@ REFLECTION.md
 
 ## 课程过程文件
 
-`SPEC.md`、`PLAN.md` 和 `SPEC_PROCESS.md` 记录需求、实现计划、规格迭代和冷启动验证；`AGENT_LOG.md` 与 `temp/` 记录真实实施证据。`REFLECTION.md` 已更新为学生个人反思正文，区分了人工判断、AI 执行和项目偏差。`docs/conversation-project-record.md` 额外整理了本轮长对话中出现的问题、解决步骤和设计决策。
+`SPEC.md`、`PLAN.md` 和 `SPEC_PROCESS.md` 记录需求、实现计划、规格迭代和冷启动验证；`AGENT_LOG.md` 记录关键实施证据。`REFLECTION.md` 已更新为学生个人反思正文，区分了人工判断、AI 执行和项目偏差。`docs/` 与 `temp/` 用于本地过程材料，默认被忽略，不作为发布内容提交。
