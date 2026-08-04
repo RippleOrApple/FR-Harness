@@ -124,6 +124,18 @@ fr-harness credential clear        清除凭据
 
 `test` 与 Agent 的 pytest 工具均使用固定参数数组和 `shell=False`，不接受模型提供的任意命令。pytest 禁用缓存插件，不会在目标项目创建 `.pytest_cache`。
 
+## 空工作区创建
+
+FR-Harness 既可以修复已有 Python 项目，也可以在空工作区中创建小型项目。空目录会被明确标记为 greenfield workspace，Agent 会先根据目标创建文件，不再猜测读取不存在的 `README.md` 或 `app.py`。
+
+新建项目的目标应同时说明源码接口和测试要求，例如：
+
+```text
+这是一个空工作区。创建 fibonacci.py，实现 fibonacci(n)；同时创建源码和 pytest 测试文件 test_fibonacci.py，覆盖正常值和负数输入；最后运行 pytest，直到测试通过。
+```
+
+当工作区还没有 `test_*.py` 或 `*_test.py` 时，源码写入后允许继续创建测试文件；测试文件存在后，控制器才要求下一步运行 pytest。`no tests ran` 会被视为“需要创建测试”，不会被当成源码实现失败。任务仍然必须取得一次 pytest 通过结果才能完成。
+
 ## 架构
 
 ```text

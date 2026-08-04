@@ -10,7 +10,7 @@ from fr_harness.config import HarnessConfig
 from fr_harness.db import Database
 from fr_harness.guardrails import GuardDecision, classify
 from fr_harness.llm import LLMClient
-from fr_harness.memory import MemoryStore, build_context
+from fr_harness.memory import MemoryStore, build_context, workspace_inventory
 from fr_harness.models import (
     Action,
     ActionKind,
@@ -80,6 +80,7 @@ class Agent:
             task.goal,
             self.memory.relevant(task.id, limit=self.memory_limit),
             feedback,
+            workspace_files=workspace_inventory(task.workspace),
         )
         try:
             action = self.llm.next_action(context)

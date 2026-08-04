@@ -82,6 +82,59 @@ def test_agent_repairs_after_pytest_feedback_then_completes(tmp_path: Path) -> N
     )
 
 
+def test_agent_guides_greenfield_task_from_source_to_tests(tmp_path: Path) -> None:
+    database = make_database(tmp_path)
+    workspace = tmp_path / "greenfield"
+    workspace.mkdir()
+    task = database.create_task("create fibonacci with tests", workspace)
+    llm = RecordingLLM(
+        [
+            Action(
+                kind=ActionKind.WRITE_FILE,
+                path="fibonacci.py",
+                content=(
+                    "def fibonacci(n):\n"
+                    "    if n < 0:\n"
+                    "        raise ValueError('n must be non-negative')\n"
+                    "    values = []\n"
+                    "    a, b = 0, 1\n"
+                    "    for _ in range(n):\n"
+                    "        values.append(a)\n"
+                    "        a, b = b, a + b\n"
+                    "    return values\n"
+                ),
+            ),
+            Action(
+                kind=ActionKind.WRITE_FILE,
+                path="test_fibonacci.py",
+                content=(
+                    "import pytest\n"
+                    "from fibonacci import fibonacci\n\n"
+                    "def test_values():\n"
+                    "    assert fibonacci(6) == [0, 1, 1, 2, 3, 5]\n\n"
+                    "def test_negative():\n"
+                    "    with pytest.raises(ValueError):\n"
+                    "        fibonacci(-1)\n"
+                ),
+            ),
+            Action(kind=ActionKind.RUN_PYTEST),
+            Action(kind=ActionKind.COMPLETE, reason="tests pass"),
+        ]
+    )
+
+    result = Agent(database, llm, classifier=allow_all).run_until_stopped(task.id)
+
+    assert result.status is TaskStatus.SUCCEEDED
+    assert result.iteration == 4
+    first_context = "\n".join(message["content"] for message in llm.contexts[0])
+    second_context = "\n".join(message["content"] for message in llm.contexts[1])
+    third_context = "\n".join(message["content"] for message in llm.contexts[2])
+    assert "Workspace inventory: empty" in first_context
+    assert "No pytest test files exist" in second_context
+    assert "test_*.py" in second_context
+    assert '{"kind":"run_pytest"}' in third_context
+
+
 def test_agent_pauses_dangerous_action_without_executing_it(tmp_path: Path) -> None:
     database = make_database(tmp_path)
     workspace = tmp_path / "project"
