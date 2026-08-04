@@ -15,5 +15,4 @@ dist/
 logs/
 docs/
 temp/
-release/*.zip
-release/*.sha256
+release/

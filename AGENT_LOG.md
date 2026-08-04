@@ -227,3 +227,9 @@ Chronological records of skills, context, subagent work, human interventions, an
 - **文档修复：** README 从 `v1.0.0` 更新到 `v1.0.1`，补充空工作区创建、源码裸命令边界、`docs/` 与 `temp/` 忽略规则和个人反思正文。
 - **索引清理：** `docs/` 与 `temp/` 曾经已经被提交，因此仅写 `.gitignore` 不会让它们从 main 消失；维护分支将这两个目录从 Git 跟踪内容中移除。
 - **隐私边界：** 新过程文档使用 `<FR-Harness>`、`<目标项目>` 等占位，不记录本机绝对路径、API Key、Token 或邮箱。
+
+## 2026-08-04：v1.0.2 最终提交维护版
+
+- **关键 prompt / context：** 用户要求完成前次评估中的第 2、3 项：最终提交说明采用 CLI Release 方案一，并发布与最终 main 对齐的新版 Release；同时要求把 `release/` 加入忽略规则并提交 PR。
+- **人工判断：** `release/` 原本包含可跟踪的快速开始和启动脚本，不能直接整目录忽略，否则 Windows Release workflow 会失去输入文件。因此先把模板迁移到 `packaging/windows/`，再把 `release/` 作为 CI 生成 ZIP/SHA256 的输出目录忽略。
+- **交付口径：** README 和 SPEC 明确采用助教补充说明中的方案一：CLI Release 链接作为部署交付；WebUI 仅作为本地可选辅助入口。

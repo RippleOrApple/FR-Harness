@@ -39,9 +39,10 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force package | Out-Null
+          New-Item -ItemType Directory -Force release | Out-Null
           Copy-Item .\dist\FR-Harness.exe .\package\FR-Harness.exe
-          Copy-Item ".\release\快速开始.txt" ".\package\快速开始.txt"
-          Copy-Item ".\release\启动 FR-Harness.cmd" ".\package\启动 FR-Harness.cmd"
+          Copy-Item ".\packaging\windows\快速开始.txt" ".\package\快速开始.txt"
+          Copy-Item ".\packaging\windows\启动 FR-Harness.cmd" ".\package\启动 FR-Harness.cmd"
           Compress-Archive -Path .\package\* -DestinationPath .\release\FR-Harness-Windows-x64.zip
           $hash = (Get-FileHash .\release\FR-Harness-Windows-x64.zip -Algorithm SHA256).Hash.ToLower()
           "$hash  FR-Harness-Windows-x64.zip" | Set-Content .\release\FR-Harness-Windows-x64.zip.sha256 -Encoding ascii

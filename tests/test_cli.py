@@ -341,7 +341,7 @@ def test_docker_distribution_files_enforce_safe_defaults() -> None:
     assert "FROM python:3.12-slim" in dockerfile
     assert "EXPOSE 8000" in dockerfile
     assert '"fr_harness.cli", "serve"' in dockerfile
-    for ignored in (".git", ".env", ".venv", "__pycache__", "*.sqlite*", "docs/", "temp/"):
+    for ignored in (".git", ".env", ".venv", "__pycache__", "*.sqlite*", "docs/", "temp/", "release/"):
         assert ignored in dockerignore
     assert "OPENAI_API_KEY=" in env_example
     assert "sk-" not in env_example

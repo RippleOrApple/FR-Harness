@@ -320,6 +320,13 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] 清理已跟踪的 `docs/` 与 `temp/` 过程材料，并在 `.gitignore` 中忽略，避免发布分支继续携带本地过程目录。
 - [x] 版本号提升为 `1.0.1`，用于触发新的 Windows Release。
 
+## Task 21：v1.0.2 最终提交维护版 — 已完成
+
+- [x] README 明确采用助教补充说明中的方案一：CLI Release 链接作为部署交付。
+- [x] `release/` 改为生成产物目录并加入 `.gitignore` / `.dockerignore`。
+- [x] Windows Release 所需快速开始与启动脚本迁移到 `packaging/windows/`。
+- [x] 版本号提升为 `1.0.2`，用于发布与最终 main 对齐的新 Release。
+
 ## 依赖关系与可并行项
 
 | 任务 | 前置任务 | 可在独立分支并行 |
