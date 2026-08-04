@@ -111,6 +111,13 @@ def test_documented_modules_and_commands_match_repository() -> None:
         "credential clear",
     ):
         assert command in readme
+    for required in (
+        "自动创建虚拟环境",
+        "专用 PowerShell",
+        "不会永久修改 PATH",
+        "fr-harness demo",
+    ):
+        assert required in readme
 
 
 def test_readme_explains_credential_and_rule_precedence() -> None:

@@ -46,7 +46,25 @@ Windows EXE 的配置、SQLite 数据库和日志默认保存在当前用户的 
 
 ## 从源码运行
 
-需要 Python 3.12 或更高版本：
+Windows 用户推荐直接双击仓库根目录的 `启动 FR-Harness.cmd`。脚本会检测 Python 3.12 或更高版本；如果没有合适的 Python，会尝试通过 `winget` 完成用户级安装。脚本还会自动创建虚拟环境、安装 FR-Harness 及测试依赖，然后打开位于项目根目录的专用 PowerShell。
+
+专用 PowerShell 会默认启动交互菜单。退出菜单后终端仍然保留，可以直接运行全部源码 CLI 命令，例如：
+
+```powershell
+fr-harness demo
+fr-harness doctor
+fr-harness --version
+```
+
+脚本只在这个专用 PowerShell 会话中把 `.venv\Scripts` 加入 `PATH`，不会永久修改 PATH，也不会影响其他项目。项目移动到其他目录后仍可通过同一个启动脚本运行。
+
+在普通且没有激活虚拟环境的 PowerShell 中，可以使用明确的可执行文件路径：
+
+```powershell
+.\.venv\Scripts\fr-harness.exe demo
+```
+
+也可以手动准备源码环境，需要 Python 3.12 或更高版本：
 
 ```powershell
 python -m venv .venv
@@ -54,7 +72,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m fr_harness.cli
 ```
 
-也可以双击仓库根目录的 `启动 FR-Harness.cmd`。源码模式默认把配置和数据库放在当前仓库目录；可通过 `FR_DATA_DIR` 指向其他数据目录。
+源码模式默认把配置和数据库放在当前仓库目录；可通过 `FR_DATA_DIR` 指向其他数据目录。
 
 首次配置或重新配置：
 
