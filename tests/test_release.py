@@ -31,7 +31,7 @@ def test_package_exposes_versioned_console_entrypoint() -> None:
     )
 
     assert completed.returncode == 0
-    assert completed.stdout.strip() == "FR-Harness 1.0.1"
+    assert completed.stdout.strip() == "FR-Harness 1.0.2"
 
 
 def test_windows_release_definition_contains_verified_artifacts() -> None:
@@ -39,7 +39,7 @@ def test_windows_release_definition_contains_verified_artifacts() -> None:
     workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(
         encoding="utf-8"
     )
-    quick_start = (ROOT / "release" / "快速开始.txt").read_text(encoding="utf-8")
+    quick_start = (ROOT / "packaging" / "windows" / "快速开始.txt").read_text(encoding="utf-8")
 
     assert "onefile" not in spec.lower()
     assert "console=True" in spec

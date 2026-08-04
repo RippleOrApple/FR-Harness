@@ -1,7 +1,7 @@
 # FR-Harness 设计规约
 
 **日期：** 2026-07-17  
-**状态：** 已完成；v1.0.1 维护版用于同步 README、个人反思和空工作区任务说明
+**状态：** 已完成；v1.0.2 最终提交维护版采用 CLI Release 链接作为部署交付
 **项目类型：** AI4SE A 路线——Coding Agent Harness
 
 ## 1. 问题陈述
@@ -213,7 +213,7 @@ SQLite 表为 `tasks`、`events`、`approvals`、`memory_entries`。首版提供
 ### 7.3 分发
 
 - 源码：公开 GitHub 仓库。
-- 主要课程交付：GitHub `v1.0.1` Release，包含 Windows x64 ZIP、单文件 EXE、中文快速开始、启动脚本和 SHA256。
+- 主要课程交付：GitHub `v1.0.2` Release，包含 Windows x64 ZIP、单文件 EXE、中文快速开始、启动脚本和 SHA256。该项目采用助教补充说明中的方案一：CLI Release 链接作为部署交付；本地 WebUI 保留为可选辅助入口，不提供公网托管地址。
 - 容器：`ghcr.io/rippleorapple/fr-harness:latest`，由 main 分支 GitHub Actions 发布；公共性必须以匿名拉取验证。
 - 本地构建：`docker build -t fr-harness:local .`。
 - 运行需要挂载 `/data` 和最小范围工作区，并通过环境变量/平台 Secret 提供真实模型配置。

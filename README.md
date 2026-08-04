@@ -4,7 +4,7 @@ FR-Harness 是一个面向 Python 项目的安全 Coding Agent Harness。它在�
 
 ## 下载即用（推荐）
 
-课程验收采用 CLI Release 方案。Windows x64 用户可从 [v1.0.1 Release](https://github.com/RippleOrApple/FR-Harness/releases/tag/v1.0.1) 下载 `FR-Harness-Windows-x64.zip`：
+课程验收采用助教补充说明中的方案一：只提供 CLI，并提交 GitHub Release 链接作为部署交付。Windows x64 用户可从 [v1.0.2 Release](https://github.com/RippleOrApple/FR-Harness/releases/tag/v1.0.2) 下载 `FR-Harness-Windows-x64.zip`：
 
 1. 解压整个 ZIP。
 2. 双击 `启动 FR-Harness.cmd` 或 `FR-Harness.exe`。
@@ -13,7 +13,7 @@ FR-Harness 是一个面向 Python 项目的安全 Coding Agent Harness。它在�
 
 Release 为单文件 Windows x64 程序，无需安装 Python。ZIP 同时提供 SHA256 校验文件和中文快速开始说明。
 
-`v1.0.1` 是文档与可用性维护版，包含空工作区创建任务的引导修复、源码启动脚本说明、`docs/` 与 `temp/` 忽略规则，以及个人反思正文。
+`v1.0.2` 是最终提交维护版，包含空工作区创建任务的引导修复、源码启动脚本说明、`docs/`、`temp/` 与 `release/` 忽略规则，以及个人反思正文。
 
 无需配置即可先做离线检查：
 
@@ -220,6 +220,8 @@ fr-harness serve --host 127.0.0.1 --port 8000
 
 浏览器访问 `http://127.0.0.1:8000/`。页面提供新建任务、任务详情和待审批操作；审批页默认展示易懂的操作摘要，并把原始 JSON 收进技术详情。
 
+课程最终提交以 CLI Release 链接为准；WebUI 是本地可选辅助入口，不提供公网托管地址。
+
 ## 测试与 CI
 
 源码全量测试：
@@ -279,6 +281,7 @@ src/fr_harness/
 .github/workflows/release.yml
 fr-harness.spec
 Dockerfile
+packaging/windows/
 SPEC.md
 PLAN.md
 SPEC_PROCESS.md
@@ -297,4 +300,4 @@ REFLECTION.md
 
 ## 课程过程文件
 
-`SPEC.md`、`PLAN.md` 和 `SPEC_PROCESS.md` 记录需求、实现计划、规格迭代和冷启动验证；`AGENT_LOG.md` 记录关键实施证据。`REFLECTION.md` 已更新为学生个人反思正文，区分了人工判断、AI 执行和项目偏差。`docs/` 与 `temp/` 用于本地过程材料，默认被忽略，不作为发布内容提交。
+`SPEC.md`、`PLAN.md` 和 `SPEC_PROCESS.md` 记录需求、实现计划、规格迭代和冷启动验证；`AGENT_LOG.md` 记录关键实施证据。`REFLECTION.md` 已更新为学生个人反思正文，区分了人工判断、AI 执行和项目偏差。`docs/`、`temp/` 与 `release/` 用于本地过程材料或生成产物，默认被忽略，不作为源码发布内容提交；Windows Release 的可跟踪打包模板位于 `packaging/windows/`。

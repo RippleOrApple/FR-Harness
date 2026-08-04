@@ -29,7 +29,7 @@ from fr_harness.task_service import TaskService
 from fr_harness.web import create_app
 
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 
 MANAGED_ENV_KEYS = {
     "FR_DATABASE_PATH",
