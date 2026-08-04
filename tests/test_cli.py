@@ -350,11 +350,17 @@ def test_docker_distribution_files_enforce_safe_defaults() -> None:
 def test_windows_quick_start_script_is_relative_and_safe() -> None:
     script_path = ROOT / "启动 FR-Harness.cmd"
     raw_script = script_path.read_bytes()
-    script = raw_script.decode("ascii")
+    script = raw_script.decode("utf-8")
 
     assert "%~dp0" in script
     assert ".venv\\Scripts\\python.exe" in script
-    assert "-m fr_harness.cli run" in script
+    assert "-m venv .venv" in script
+    assert '-m pip install -e ".[dev]"' in script
+    assert "winget install --id Python.Python.3.12" in script
+    assert 'start "FR-Harness CLI" powershell.exe -NoExit' in script
+    assert "$env:Path" in script
+    assert "fr-harness run" in script
+    assert "SetEnvironmentVariable" not in script
     assert b"\r\n" in raw_script
     assert b"\n" not in raw_script.replace(b"\r\n", b"")
     assert "D:\\" not in script
