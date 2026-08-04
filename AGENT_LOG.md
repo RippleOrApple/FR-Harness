@@ -219,3 +219,10 @@ Chronological records of skills, context, subagent work, human interventions, an
 - **公开交付：** [FR-Harness v1.0.0](https://github.com/RippleOrApple/FR-Harness/releases/tag/v1.0.0) 不是 draft 或 prerelease，包含 Windows x64 ZIP 与 SHA256 两个附件。
 - **匿名验证：** 未使用 GitHub API 凭据的普通 HTTPS 下载成功；ZIP 为 19,454,029 字节，SHA256 与附件校验文件一致。解压后包含 EXE、中文启动脚本和快速开始；下载后的 EXE 显示 1.0.0，四项演示全部 PASS。
 - **Node 提示：** workflow 仅报告 GitHub Actions 的 Node.js 20 弃用提醒，没有项目测试或构建失败；后续可随官方 action 主版本升级处理。
+
+## 2026-08-04：README 与 v1.0.1 维护版
+
+- **关键 prompt / context：** 用户要求 README 必须结合项目实际重新检查过时内容，并提交新版 Release 与 PR。
+- **人工判断：** 以最新 `origin/main` 为基线创建维护分支，不继续在已合并的功能分支追加；将本次定位为文档和可用性维护版，而不是新增核心能力。
+- **文档修复：** README 从 `v1.0.0` 更新到 `v1.0.1`，补充空工作区创建、源码裸命令边界、`temp/` 忽略规则、个人反思正文和对话过程记录。
+- **隐私边界：** 新过程文档使用 `<FR-Harness>`、`<目标项目>` 等占位，不记录本机绝对路径、API Key、Token 或邮箱。

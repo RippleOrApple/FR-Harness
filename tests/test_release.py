@@ -31,7 +31,7 @@ def test_package_exposes_versioned_console_entrypoint() -> None:
     )
 
     assert completed.returncode == 0
-    assert completed.stdout.strip() == "FR-Harness 1.0.0"
+    assert completed.stdout.strip() == "FR-Harness 1.0.1"
 
 
 def test_windows_release_definition_contains_verified_artifacts() -> None:

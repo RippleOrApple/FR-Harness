@@ -1,10 +1,10 @@
 # FR-Harness
 
-FR-Harness 是一个面向 Python 项目的安全 Coding Agent Harness。它在用户指定的工作区内读取和修改文件，以 `pytest` 作为客观反馈，并在覆盖已有文件等危险操作前暂停等待审批。Agent 控制循环、状态恢复、护栏、审计和记忆均由项目自行实现。
+FR-Harness 是一个面向 Python 项目的安全 Coding Agent Harness。它在用户指定的工作区内读取和修改文件，以 `pytest` 作为客观反馈，并在覆盖已有文件、运行测试等危险操作前暂停等待审批。Agent 控制循环、状态恢复、护栏、审计和记忆均由项目自行实现；当前版本既能修复已有 pytest 项目，也能在空工作区中按目标创建小型 Python 项目和测试。
 
 ## 下载即用（推荐）
 
-课程验收采用 CLI Release 方案。Windows x64 用户可从 [v1.0.0 Release](https://github.com/RippleOrApple/FR-Harness/releases/tag/v1.0.0) 下载 `FR-Harness-Windows-x64.zip`：
+课程验收采用 CLI Release 方案。Windows x64 用户可从 [v1.0.1 Release](https://github.com/RippleOrApple/FR-Harness/releases/tag/v1.0.1) 下载 `FR-Harness-Windows-x64.zip`：
 
 1. 解压整个 ZIP。
 2. 双击 `启动 FR-Harness.cmd` 或 `FR-Harness.exe`。
@@ -12,6 +12,8 @@ FR-Harness 是一个面向 Python 项目的安全 Coding Agent Harness。它在�
 4. 在主菜单选择“新建修复任务”。
 
 Release 为单文件 Windows x64 程序，无需安装 Python。ZIP 同时提供 SHA256 校验文件和中文快速开始说明。
+
+`v1.0.1` 是文档与可用性维护版，包含空工作区创建任务的引导修复、源码启动脚本说明、`temp/` 忽略规则、个人反思正文和对话过程整理文档。
 
 无需配置即可先做离线检查：
 
@@ -58,7 +60,7 @@ fr-harness --version
 
 脚本只在这个专用 PowerShell 会话中把 `.venv\Scripts` 加入 `PATH`，不会永久修改 PATH，也不会影响其他项目。项目移动到其他目录后仍可通过同一个启动脚本运行。
 
-在普通且没有激活虚拟环境的 PowerShell 中，可以使用明确的可执行文件路径：
+在普通且没有激活虚拟环境的 PowerShell 中，`fr-harness` 裸命令通常不可用，因为项目尚未安装到当前 shell 的 PATH。此时可以使用明确的可执行文件路径：
 
 ```powershell
 .\.venv\Scripts\fr-harness.exe demo
@@ -135,6 +137,8 @@ FR-Harness 既可以修复已有 Python 项目，也可以在空工作区中创�
 ```
 
 当工作区还没有 `test_*.py` 或 `*_test.py` 时，源码写入后允许继续创建测试文件；测试文件存在后，控制器才要求下一步运行 pytest。`no tests ran` 会被视为“需要创建测试”，不会被当成源码实现失败。任务仍然必须取得一次 pytest 通过结果才能完成。
+
+如果目标是从零创建程序，建议把需求写得比“创建斐波那契数列计算”更具体：说明文件名、函数名、输入输出和测试范围。这样 Agent 不会把空目录误判为已有项目修复任务。
 
 ## 架构
 
@@ -293,4 +297,4 @@ REFLECTION.md
 
 ## 课程过程文件
 
-`SPEC.md`、`PLAN.md` 和 `SPEC_PROCESS.md` 记录需求、实现计划、规格迭代和冷启动验证；`AGENT_LOG.md` 与 `temp/` 记录真实实施证据。`REFLECTION.md` 只保留学生个人反思的要求和写作检查项，正文必须由学生根据真实经历自行完成。
+`SPEC.md`、`PLAN.md` 和 `SPEC_PROCESS.md` 记录需求、实现计划、规格迭代和冷启动验证；`AGENT_LOG.md` 与 `temp/` 记录真实实施证据。`REFLECTION.md` 已更新为学生个人反思正文，区分了人工判断、AI 执行和项目偏差。`docs/conversation-project-record.md` 额外整理了本轮长对话中出现的问题、解决步骤和设计决策。
