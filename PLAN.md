@@ -317,7 +317,7 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] 从最新 `origin/main` 创建维护分支，避免在已合并功能分支继续追加。
 - [x] README 与当前实现对齐：源码启动脚本、裸命令边界、空工作区创建、过程文件和新版 Release 链接。
 - [x] `REFLECTION.md` 从占位说明更新为个人反思正文。
-- [x] 新增 `docs/conversation-project-record.md`，整理本轮配置、DeepSeek、CLI、审批、PR/CI、Release 和空工作区问题。
+- [x] 清理已跟踪的 `docs/` 与 `temp/` 过程材料，并在 `.gitignore` 中忽略，避免发布分支继续携带本地过程目录。
 - [x] 版本号提升为 `1.0.1`，用于触发新的 Windows Release。
 
 ## 依赖关系与可并行项

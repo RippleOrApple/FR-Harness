@@ -224,5 +224,6 @@ Chronological records of skills, context, subagent work, human interventions, an
 
 - **关键 prompt / context：** 用户要求 README 必须结合项目实际重新检查过时内容，并提交新版 Release 与 PR。
 - **人工判断：** 以最新 `origin/main` 为基线创建维护分支，不继续在已合并的功能分支追加；将本次定位为文档和可用性维护版，而不是新增核心能力。
-- **文档修复：** README 从 `v1.0.0` 更新到 `v1.0.1`，补充空工作区创建、源码裸命令边界、`temp/` 忽略规则、个人反思正文和对话过程记录。
+- **文档修复：** README 从 `v1.0.0` 更新到 `v1.0.1`，补充空工作区创建、源码裸命令边界、`docs/` 与 `temp/` 忽略规则和个人反思正文。
+- **索引清理：** `docs/` 与 `temp/` 曾经已经被提交，因此仅写 `.gitignore` 不会让它们从 main 消失；维护分支将这两个目录从 Git 跟踪内容中移除。
 - **隐私边界：** 新过程文档使用 `<FR-Harness>`、`<目标项目>` 等占位，不记录本机绝对路径、API Key、Token 或邮箱。

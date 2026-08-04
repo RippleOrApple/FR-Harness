@@ -13,6 +13,7 @@ htmlcov/
 build/
 dist/
 logs/
+docs/
 temp/
 release/*.zip
 release/*.sha256
