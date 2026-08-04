@@ -312,6 +312,14 @@ ApprovalStateMachine.reject(approval_id: UUID) -> None
 - [x] PR #7 合并为 main 提交 `73ceaf8`，随后创建并推送 `v1.0.0` 标签。
 - [x] Windows Release workflow 全部通过；匿名下载 ZIP 成功，SHA256 匹配，下载后的 EXE 版本与四项演示通过。
 
+## Task 20：README、反思与 v1.0.1 维护版 — 已完成
+
+- [x] 从最新 `origin/main` 创建维护分支，避免在已合并功能分支继续追加。
+- [x] README 与当前实现对齐：源码启动脚本、裸命令边界、空工作区创建、过程文件和新版 Release 链接。
+- [x] `REFLECTION.md` 从占位说明更新为个人反思正文。
+- [x] 新增 `docs/conversation-project-record.md`，整理本轮配置、DeepSeek、CLI、审批、PR/CI、Release 和空工作区问题。
+- [x] 版本号提升为 `1.0.1`，用于触发新的 Windows Release。
+
 ## 依赖关系与可并行项
 
 | 任务 | 前置任务 | 可在独立分支并行 |
