@@ -1,10 +1,45 @@
+import os
 import sqlite3
+from bisect import insort
 from contextlib import closing
 from uuid import UUID
+from pathlib import Path
 
 from fr_harness.db import Database
 from fr_harness.models import Feedback
 from fr_harness.security import redact_secrets
+
+
+IGNORED_WORKSPACE_ENTRIES = {
+    ".coverage",
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "htmlcov",
+}
+
+
+def workspace_inventory(root: Path, limit: int = 100) -> list[str]:
+    if limit < 1:
+        return []
+    resolved_root = root.resolve()
+    selected: list[str] = []
+    for directory, names, files in os.walk(resolved_root, followlinks=False):
+        names[:] = sorted(
+            name for name in names if name not in IGNORED_WORKSPACE_ENTRIES
+        )
+        relative_directory = Path(directory).relative_to(resolved_root)
+        for name in sorted(files):
+            if name in IGNORED_WORKSPACE_ENTRIES:
+                continue
+            relative = (relative_directory / name).as_posix()
+            insort(selected, relative)
+            if len(selected) > limit:
+                selected.pop()
+    return selected
 
 
 class MemoryStore:

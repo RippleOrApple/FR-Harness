@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 from fr_harness.db import Database
-from fr_harness.memory import MemoryStore, build_context
+from fr_harness.memory import MemoryStore, build_context, workspace_inventory
 from fr_harness.models import Feedback
 
 
@@ -10,6 +10,36 @@ def make_store(tmp_path: Path) -> tuple[Database, MemoryStore]:
     database = Database(tmp_path / "fr.sqlite3")
     database.initialize()
     return database, MemoryStore(database)
+
+
+def test_workspace_inventory_is_bounded_sorted_and_ignores_caches(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "fibonacci.py").write_text("", encoding="utf-8")
+    (tmp_path / "test_fibonacci.py").write_text("", encoding="utf-8")
+    for index in range(105):
+        (tmp_path / f"module_{index:03}.py").write_text("", encoding="utf-8")
+    for ignored in (
+        ".git",
+        ".venv",
+        "__pycache__",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+        "htmlcov",
+    ):
+        cache = tmp_path / ignored
+        cache.mkdir()
+        (cache / "secret.py").write_text("", encoding="utf-8")
+    (tmp_path / ".coverage").write_text("cache", encoding="utf-8")
+
+    inventory = workspace_inventory(tmp_path)
+
+    assert len(inventory) == 100
+    assert inventory == sorted(inventory)
+    assert "fibonacci.py" in inventory
+    assert all("secret.py" not in path for path in inventory)
+    assert ".coverage" not in inventory
 
 
 def test_relevant_returns_only_the_two_most_recent_task_memories(tmp_path: Path) -> None:
