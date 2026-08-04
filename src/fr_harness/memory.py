@@ -51,6 +51,10 @@ def _is_pytest_file(path: str) -> bool:
     return name.endswith("_test.py") or (name.startswith("test_") and name.endswith(".py"))
 
 
+def has_pytest_files(paths: list[str]) -> bool:
+    return any(_is_pytest_file(path) for path in paths)
+
+
 class MemoryStore:
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -132,9 +136,7 @@ def build_context(
                 }
             )
     if memories and "write_file result" in memories[0]:
-        has_tests = workspace_files is None or any(
-            _is_pytest_file(path) for path in workspace_files
-        )
+        has_tests = workspace_files is None or has_pytest_files(workspace_files)
         if has_tests:
             content = (
                 'Controller state: latest tool result is write_file. '

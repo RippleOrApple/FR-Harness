@@ -116,6 +116,8 @@ def test_documented_modules_and_commands_match_repository() -> None:
         "专用 PowerShell",
         "不会永久修改 PATH",
         "fr-harness demo",
+        "空工作区",
+        "同时创建源码和 pytest 测试文件",
     ):
         assert required in readme
 

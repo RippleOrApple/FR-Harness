@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fr_harness.feedback import parse_pytest_result
 from fr_harness.guardrails import resolve_workspace_path
+from fr_harness.memory import has_pytest_files, workspace_inventory
 from fr_harness.models import Action, ActionKind, ToolResult
 
 
@@ -15,11 +16,21 @@ class ToolDispatcher:
         if action.kind is ActionKind.READ_FILE:
             target = self._target(root, action)
             if not target.exists():
+                if not workspace_inventory(root, limit=1):
+                    guidance = (
+                        "workspace is empty; use write_file to create source and pytest "
+                        "test files named by the goal"
+                    )
+                else:
+                    guidance = (
+                        "read README.md, read pytest output, or use run_pytest to "
+                        "identify real files"
+                    )
                 return ToolResult(
                     ok=False,
                     output=(
                         f"read_file failed for {action.path}: file not found; "
-                        "read README.md, read pytest output, or use run_pytest to identify real files"
+                        f"{guidance}"
                     ),
                 )
             if target.is_dir():
@@ -45,12 +56,14 @@ class ToolDispatcher:
                         target,
                         (current_stat.st_atime, float(int(previous_mtime) + 1)),
                     )
+            inventory = workspace_inventory(root)
+            if has_pytest_files(inventory):
+                guidance = "next action should be run_pytest"
+            else:
+                guidance = "next action should create a pytest test file with write_file"
             return ToolResult(
                 ok=True,
-                output=(
-                    f"write_file completed for {action.path}; "
-                    "next action should be run_pytest"
-                ),
+                output=f"write_file completed for {action.path}; {guidance}",
             )
 
         if action.kind is ActionKind.RUN_PYTEST:

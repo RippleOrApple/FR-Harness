@@ -22,6 +22,8 @@ def test_read_file_returns_utf8_content(tmp_path: Path) -> None:
 
 
 def test_write_file_writes_utf8_content(tmp_path: Path) -> None:
+    (tmp_path / "test_hello.py").write_text("", encoding="utf-8")
+
     result = ToolDispatcher().execute(
         Action(kind=ActionKind.WRITE_FILE, path="hello.txt", content="安全写入"),
         tmp_path,
@@ -31,6 +33,17 @@ def test_write_file_writes_utf8_content(tmp_path: Path) -> None:
     assert "write_file completed" in result.output
     assert "next action should be run_pytest" in result.output
     assert (tmp_path / "hello.txt").read_text(encoding="utf-8") == "安全写入"
+
+
+def test_greenfield_source_write_requests_a_pytest_file(tmp_path: Path) -> None:
+    result = ToolDispatcher().execute(
+        Action(kind=ActionKind.WRITE_FILE, path="fibonacci.py", content="value = 1"),
+        tmp_path,
+    )
+
+    assert result.ok is True
+    assert "create a pytest test file" in result.output
+    assert "run_pytest" not in result.output
 
 
 def test_same_size_python_rewrite_advances_timestamp_cache_key(tmp_path: Path) -> None:
@@ -55,6 +68,8 @@ def test_file_tool_rejects_path_outside_workspace(tmp_path: Path) -> None:
 
 
 def test_read_file_reports_missing_file_as_recoverable_feedback(tmp_path: Path) -> None:
+    (tmp_path / "README.md").write_text("project", encoding="utf-8")
+
     result = ToolDispatcher().execute(
         Action(kind=ActionKind.READ_FILE, path="app.py"), tmp_path
     )
@@ -63,6 +78,17 @@ def test_read_file_reports_missing_file_as_recoverable_feedback(tmp_path: Path) 
     assert "read_file failed for app.py" in result.output
     assert "file not found" in result.output
     assert "run_pytest" in result.output
+
+
+def test_read_file_reports_an_empty_greenfield_workspace(tmp_path: Path) -> None:
+    result = ToolDispatcher().execute(
+        Action(kind=ActionKind.READ_FILE, path="app.py"), tmp_path
+    )
+
+    assert result.ok is False
+    assert "workspace is empty" in result.output
+    assert "use write_file" in result.output
+    assert "run_pytest" not in result.output
 
 
 def test_run_pytest_uses_fixed_command_and_workspace(
